@@ -1,0 +1,747 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Atlas Navigation — Traversal, Excavation, Snapshots</title>
+  <meta name="description" content="Atlas Navigation: excavation modes (single/radius/layer-wise), the depth carousel, the always-visible selection stamp, and the snapshot system for perfect-ish recovery." />
+
+  <style>
+    :root{
+      --bg0:#070913;
+      --bg1:#0b1022;
+      --panel:rgba(255,255,255,.06);
+      --panel2:rgba(255,255,255,.035);
+      --border:rgba(255,255,255,.10);
+      --text:rgba(255,255,255,.92);
+      --muted:rgba(255,255,255,.68);
+      --muted2:rgba(255,255,255,.52);
+
+      --cyan:#4fd1ff;
+      --violet:#a78bfa;
+      --mint:#34d399;
+      --amber:#fbbf24;
+      --rose:#fb7185;
+      --hot:#ff3df2;
+
+      --shadow: 0 18px 60px rgba(0,0,0,.55);
+      --radius: 18px;
+      --radius2: 26px;
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      color:var(--text);
+      background:
+        radial-gradient(1200px 800px at 14% 0%, rgba(167,139,250,.18), transparent 60%),
+        radial-gradient(1000px 800px at 85% 10%, rgba(79,209,255,.14), transparent 62%),
+        radial-gradient(900px 700px at 40% 110%, rgba(52,211,153,.10), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      letter-spacing:.1px;
+      line-height:1.45;
+    }
+
+    a{color:var(--cyan); text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    .wrap{max-width:1180px; margin:0 auto; padding:28px 18px 84px}
+
+    /* Top bar */
+    .top{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:14px; padding:10px 6px 18px;
+      position:sticky; top:0; z-index:20;
+      backdrop-filter: blur(10px);
+      background: linear-gradient(180deg, rgba(7,9,19,.72), rgba(7,9,19,.28));
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      font-weight:1000; letter-spacing:.2px;
+    }
+    .spark{
+      width:14px; height:14px; border-radius:999px;
+      background: conic-gradient(from 0deg, var(--cyan), var(--violet), var(--mint), var(--cyan));
+      box-shadow: 0 0 0 5px rgba(79,209,255,.10);
+    }
+    .nav{display:flex; gap:14px; flex-wrap:wrap}
+    .nav a{
+      color:var(--muted);
+      font-weight:800;
+      font-size:13px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid transparent;
+    }
+    .nav a:hover{
+      color:var(--text);
+      border-color: rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      text-decoration:none;
+    }
+
+    /* Cards */
+    .card{
+      background: linear-gradient(180deg, var(--panel), var(--panel2));
+      border:1px solid var(--border);
+      border-radius: var(--radius2);
+      box-shadow: var(--shadow);
+    }
+    .pad{padding:18px}
+    .pad-xl{padding:26px 22px}
+
+    /* Hero */
+    .hero{
+      display:grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap:16px;
+      align-items:stretch;
+      margin-top:8px;
+    }
+    @media (max-width: 940px){ .hero{grid-template-columns:1fr} }
+
+    .kicker{
+      display:inline-flex; align-items:center; gap:10px;
+      padding:7px 12px; border-radius:999px;
+      background: rgba(79,209,255,.10);
+      border:1px solid rgba(79,209,255,.22);
+      color: var(--muted);
+      font-size:13px;
+      font-weight:800;
+      width:max-content;
+    }
+    .kdot{
+      width:8px; height:8px; border-radius:999px;
+      background: var(--cyan);
+      box-shadow: 0 0 18px rgba(79,209,255,.65);
+    }
+
+    h1{
+      margin:14px 0 10px;
+      font-size:44px;
+      line-height:1.03;
+      letter-spacing:-.8px;
+    }
+    @media (max-width: 520px){ h1{font-size:34px} }
+
+    .lead{
+      color:var(--muted);
+      font-size:16px;
+      max-width: 84ch;
+      margin:0;
+    }
+
+    /* Emphasis terms */
+    .term{
+      font-weight:1000;
+      letter-spacing:.1px;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      display:inline-block;
+      margin:2px 4px 2px 0;
+      white-space:nowrap;
+    }
+    .t-cyan{ color: rgba(79,209,255,.95); border-color: rgba(79,209,255,.25); background: rgba(79,209,255,.08); }
+    .t-violet{ color: rgba(167,139,250,.96); border-color: rgba(167,139,250,.25); background: rgba(167,139,250,.08); }
+    .t-mint{ color: rgba(52,211,153,.96); border-color: rgba(52,211,153,.25); background: rgba(52,211,153,.08); }
+    .t-amber{ color: rgba(251,191,36,.95); border-color: rgba(251,191,36,.25); background: rgba(251,191,36,.08); }
+    .t-rose{ color: rgba(251,113,133,.95); border-color: rgba(251,113,133,.25); background: rgba(251,113,133,.08); }
+    .t-hot{
+      color: rgba(255,61,242,.96);
+      border-color: rgba(255,61,242,.30);
+      background: rgba(255,61,242,.10);
+      box-shadow: 0 0 0 6px rgba(255,61,242,.06);
+    }
+
+    .cta-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:16px}
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:10px;
+      padding:10px 14px; border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      font-weight:1000;
+      font-size:13px;
+      letter-spacing:.2px;
+    }
+    .btn.primary{
+      border-color: rgba(79,209,255,.42);
+      background: rgba(79,209,255,.12);
+      box-shadow: 0 0 0 7px rgba(79,209,255,.07);
+    }
+    .btn:hover{filter:brightness(1.08); text-decoration:none}
+
+    /* Side stack */
+    .stack{display:grid; gap:12px}
+    .mini{
+      padding:14px;
+      border-radius: var(--radius);
+      background: rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.10);
+    }
+    .mini h3{
+      margin:0 0 6px;
+      font-size:13px;
+      color:var(--muted);
+      font-weight:1000;
+      letter-spacing:.35px;
+      text-transform:uppercase;
+    }
+    .mini p{margin:0; color:var(--muted2); font-size:13px}
+
+    /* Sections */
+    section{margin-top:22px}
+    h2{
+      margin:0 0 8px;
+      font-size:24px;
+      letter-spacing:-.25px;
+    }
+    .subhead{
+      font-family:var(--mono);
+      font-size:12px;
+      color: rgba(255,255,255,.58);
+      letter-spacing:.6px;
+      text-transform:uppercase;
+      margin-bottom:8px;
+    }
+
+    /* Grid helper */
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:14px;
+      margin-top:18px;
+    }
+    .span12{grid-column: span 12}
+    .span8{grid-column: span 8}
+    .span4{grid-column: span 4}
+    .span6{grid-column: span 6}
+    @media (max-width: 940px){
+      .span8,.span4,.span6{grid-column: span 12}
+    }
+
+    /* Tiles */
+    .tiles{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap:12px;
+      margin-top:14px;
+    }
+    @media (max-width: 980px){ .tiles{grid-template-columns: repeat(2, minmax(0,1fr));} }
+    @media (max-width: 560px){ .tiles{grid-template-columns: 1fr;} }
+
+    .tile{
+      padding:14px;
+      border-radius: var(--radius);
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.20);
+      position:relative;
+      overflow:hidden;
+    }
+    .tile:before{
+      content:"";
+      position:absolute; inset:-40px -40px auto auto;
+      width:160px; height:160px;
+      background: radial-gradient(circle at 30% 30%, rgba(79,209,255,.16), transparent 60%);
+      transform: rotate(18deg);
+    }
+    .tile h3{
+      margin:0 0 6px;
+      font-size:16px;
+      letter-spacing:-.15px;
+    }
+    .tile p{margin:0; color:var(--muted); font-size:13px}
+
+    .badge{
+      display:inline-flex; align-items:center; gap:8px;
+      font-size:12px; font-weight:1000;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.76);
+      margin-bottom:10px;
+      width:max-content;
+    }
+    .b1{border-color: rgba(79,209,255,.25); background: rgba(79,209,255,.07)}
+    .b2{border-color: rgba(167,139,250,.25); background: rgba(167,139,250,.07)}
+    .b3{border-color: rgba(52,211,153,.25); background: rgba(52,211,153,.07)}
+    .b4{border-color: rgba(251,191,36,.25); background: rgba(251,191,36,.07)}
+    .b5{border-color: rgba(251,113,133,.25); background: rgba(251,113,133,.07)}
+    .b6{border-color: rgba(255,61,242,.25); background: rgba(255,61,242,.07)}
+
+    /* Diagram block */
+    .diagram{
+      font-family:var(--mono);
+      font-size:12px;
+      line-height:1.6;
+      color: rgba(255,255,255,.80);
+      background: rgba(0,0,0,.34);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius: var(--radius);
+      padding:12px;
+      overflow:auto;
+    }
+    .diagram .k{color: rgba(79,209,255,.95)}
+    .diagram .v{color: rgba(167,139,250,.95)}
+    .diagram .m{color: rgba(52,211,153,.95)}
+    .diagram .a{color: rgba(251,191,36,.95)}
+    .diagram .r{color: rgba(251,113,133,.95)}
+    .diagram .h{color: rgba(255,61,242,.95)}
+
+    /* Table-ish list */
+    .list{
+      margin-top:12px;
+      border-radius: var(--radius);
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.20);
+      overflow:hidden;
+    }
+    .row{
+      display:grid;
+      grid-template-columns: 220px 1fr;
+      gap:12px;
+      padding:12px 14px;
+      border-top:1px solid rgba(255,255,255,.08);
+    }
+    .row:first-child{border-top:none}
+    @media (max-width: 720px){
+      .row{grid-template-columns:1fr}
+    }
+    .row .k{
+      font-family:var(--mono);
+      color: rgba(255,255,255,.65);
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.6px;
+    }
+    .row .v{
+      color: var(--muted);
+      font-size:13px;
+    }
+
+    /* Callout */
+    .quote{
+      margin-top:12px;
+      padding:14px;
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.14);
+      background:
+        radial-gradient(900px 240px at 20% 10%, rgba(255,61,242,.14), transparent 55%),
+        radial-gradient(900px 240px at 90% 20%, rgba(79,209,255,.10), transparent 60%),
+        rgba(0,0,0,.20);
+      position:relative;
+      overflow:hidden;
+    }
+    .quote:before{
+      content:"";
+      position:absolute; inset:-60px -60px auto auto;
+      width:240px; height:240px;
+      background: radial-gradient(circle at 35% 35%, rgba(255,61,242,.20), transparent 60%);
+      transform: rotate(18deg);
+    }
+    .quote p{margin:0; color:rgba(255,255,255,.80); font-size:13.5px}
+    .quote b{color:rgba(255,255,255,.95)}
+
+    footer{
+      margin-top:28px;
+      color: rgba(255,255,255,.50);
+      font-size:12px;
+      border-top:1px solid rgba(255,255,255,.10);
+      padding-top:14px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">
+        <span class="spark" aria-hidden="true"></span>
+        <span>Atlas Navigation</span>
+      </div>
+      <div class="nav">
+        <a href="#overview">Overview</a>
+        <a href="#excavation">Excavation</a>
+        <a href="#stamp">Selection Stamp</a>
+        <a href="#save">Saving</a>
+        <a href="#recovery">Recovery</a>
+      </div>
+    </div>
+
+    <!-- HERO -->
+    <div class="hero" id="overview">
+      <div class="card pad-xl">
+        <div class="kicker"><span class="kdot"></span>Traversal, excavation, and saved return paths</div>
+
+        <h1>
+          You don’t “scroll” Atlas.
+          You <span class="term t-mint">dig</span>,
+          <span class="term t-violet">orbit</span>,
+          and <span class="term t-hot">re-enter</span>.
+        </h1>
+
+        <p class="lead">
+          Navigation in Atlas is built around two ideas:
+          (1) the <span class="term t-cyan">top plane</span> where you see the world’s structure, and
+          (2) the <span class="term t-amber">depth carousel</span> where you excavate meaning layer by layer.
+          Every selected image can be saved into a named collection with the exact arrangement that produced it,
+          so you can reproduce the same location even after catastrophic data loss.
+        </p>
+
+        <div class="cta-row">
+          <a class="btn primary" href="#excavation">Excavation modes</a>
+          <a class="btn" href="#save">What “Save” stores</a>
+          <a class="btn" href="#recovery">How recovery works</a>
+        </div>
+
+        <div class="diagram" style="margin-top:14px" aria-label="Navigation mental model">
+          <span class="k">Top Plane</span>: select a stalagmite (column) or neighborhood
+          <br/>
+          <span class="a">Depth Carousel</span>: excavate downward by layer index
+          <br/>
+          <span class="h">Selection Stamp</span>: always-visible neighborhood number (1,2,3…)
+          <br/>
+          <span class="v">Save</span>: store arrangement + seeds + dataset + selected coordinate + note
+          <br/>
+          → later: <span class="m">rebuild</span> the world and <span class="m">return</span> to the same place (or the closest match)
+        </div>
+      </div>
+
+      <div class="card pad">
+        <div class="stack">
+          <div class="mini">
+            <h3>Plane first</h3>
+            <p>Start high. Read structure. Pick a tower or a neighborhood.</p>
+          </div>
+          <div class="mini">
+            <h3>Depth second</h3>
+            <p>Dig with the carousel. Each step down is a tighter, deeper stratum.</p>
+          </div>
+          <div class="mini">
+            <h3>Always-visible context</h3>
+            <p>The “1,2,3…” stamp means a save can re-find you without magic.</p>
+          </div>
+          <div class="mini">
+            <h3>Save = return path</h3>
+            <p>You don’t just save an image. You save the *way* you arrived.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXCAVATION -->
+    <section id="excavation">
+      <div class="card pad">
+        <div class="subhead">I. Excavation</div>
+        <h2>Three dig modes: needle, core sample, geological survey</h2>
+        <p class="lead">
+          Excavation decides what the carousel is “allowed” to consider when you dig.
+          Same plane, different instrument.
+        </p>
+
+        <div class="tiles">
+          <div class="tile">
+            <div class="badge b1">Mode</div>
+            <h3><span class="term t-cyan">Single</span> (needle)</h3>
+            <p>
+              Only the selected column counts.
+              The carousel returns a pure vertical stack. Highest precision, clean provenance.
+            </p>
+          </div>
+
+          <div class="tile">
+            <div class="badge b4">Mode</div>
+            <h3><span class="term t-amber">Radius</span> (core sample)</h3>
+            <p>
+              Include neighbors in rings. Ring 0 is the tower. Ring 1 is the first halo around it. Ring 2 is the halo of the halo.
+              This reveals bridges and blended regions.
+            </p>
+          </div>
+
+          <div class="tile">
+            <div class="badge b2">Mode</div>
+            <h3><span class="term t-violet">Layer-wise</span> (survey)</h3>
+            <p>
+              Instead of digging one tower, you slice the whole world at a given depth index.
+              “Show me the plane at depth 12.”
+            </p>
+          </div>
+        </div>
+
+        <div class="list">
+          <div class="row">
+            <div class="k">What changes</div>
+            <div class="v">
+              The plane doesn’t change. The meaning of the depth carousel changes:
+              <b>Single</b> reads one tower, <b>Radius</b> reads a neighborhood, <b>Layer-wise</b> reads the entire world layer.
+            </div>
+          </div>
+          <div class="row">
+            <div class="k">Why it matters</div>
+            <div class="v">
+              This is how you avoid two bad extremes: a sterile “one result” system and a chaotic “everything at once” system.
+              You choose the aperture.
+            </div>
+          </div>
+        </div>
+
+        <div class="quote">
+          <p>
+            <b>Atlas rule:</b> the user controls the aperture of meaning.
+            The same coordinate can be read like a scalpel, a shovel, or a satellite image.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SELECTION STAMP -->
+    <section id="stamp">
+      <div class="grid">
+        <div class="card pad span6">
+          <div class="subhead">II. Always-visible context</div>
+          <h2>The Selection Stamp (1,2,3…) is the locator</h2>
+          <p class="lead">
+            Every selection displays a compact “stamp” that never disappears.
+            It’s the human-readable breadcrumb that makes saves re-enterable.
+          </p>
+
+          <div class="list">
+            <div class="row">
+              <div class="k">Stamp = 1</div>
+              <div class="v">Selected image only. No neighborhood elevated. Purest needle view.</div>
+            </div>
+            <div class="row">
+              <div class="k">Stamp = 2</div>
+              <div class="v">Selected + ring-1 neighborhood. First halo included in excavation context.</div>
+            </div>
+            <div class="row">
+              <div class="k">Stamp = 3</div>
+              <div class="v">Selected + ring-2 neighborhood. Two halos included (broader blend).</div>
+            </div>
+          </div>
+
+          <div class="diagram" style="margin-top:14px" aria-label="Stamp diagram">
+            <span class="h">Selection Stamp</span> = neighborhood rings included
+            <br/>
+            1 → ring 0 only
+            <br/>
+            2 → ring 0 + ring 1
+            <br/>
+            3 → ring 0 + ring 1 + ring 2
+            <br/>
+            … and so on
+          </div>
+        </div>
+
+        <div class="card pad span6">
+          <div class="subhead">Why it’s non-negotiable</div>
+          <h2>It makes recovery realistic (not mystical)</h2>
+          <p class="lead">
+            A saved coordinate alone can drift if the world rearranges.
+            But a saved coordinate + excavation mode + stamp + depth index re-finds the same “kind of place.”
+          </p>
+
+          <div class="tiles">
+            <div class="tile">
+              <div class="badge b6">Guarantee</div>
+              <h3>Re-enter the same context</h3>
+              <p>Even if exact placement changes, you can return to the closest matching neighborhood and stratum.</p>
+            </div>
+            <div class="tile">
+              <div class="badge b3">Result</div>
+              <h3>Saved items are maps</h3>
+              <p>You didn’t save a picture. You saved a route: a reproducible path through the system.</p>
+            </div>
+            <div class="tile">
+              <div class="badge b5">Feel</div>
+              <h3>“I’ve been here before.”</h3>
+              <p>Because you have. The stamp makes déjà vu mechanical, not performative.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SAVE -->
+    <section id="save">
+      <div class="card pad">
+        <div class="subhead">III. Saving</div>
+        <h2>Save stores the world-state that produced the find</h2>
+        <p class="lead">
+          Each excavated image can be saved into a named collection. The save includes enough information to reconstruct
+          the arrangement, then return to the same location (or the nearest match) later.
+        </p>
+
+        <div class="grid">
+          <div class="card pad span6" style="background:rgba(0,0,0,.18); border-color:rgba(255,255,255,.10)">
+            <h2 style="font-size:20px;margin-bottom:6px">Saved with each item</h2>
+            <div class="list">
+              <div class="row">
+                <div class="k">Collection</div>
+                <div class="v">User-provided name (folderless, but intentional).</div>
+              </div>
+              <div class="row">
+                <div class="k">Selected coordinate</div>
+                <div class="v">(x,y,z) of the specific image, plus its depth index.</div>
+              </div>
+              <div class="row">
+                <div class="k">Excavation context</div>
+                <div class="v">Mode (single/radius/layer-wise) + Selection Stamp (1,2,3…).</div>
+              </div>
+              <div class="row">
+                <div class="k">Note</div>
+                <div class="v">Optional text annotation attached to the save.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card pad span6" style="background:rgba(0,0,0,.18); border-color:rgba(255,255,255,.10)">
+            <h2 style="font-size:20px;margin-bottom:6px">The arrangement snapshot</h2>
+            <div class="list">
+              <div class="row">
+                <div class="k">Founding seeds</div>
+                <div class="v">Which images/tags/clusters founded the plane or region.</div>
+              </div>
+              <div class="row">
+                <div class="k">Points on the plane</div>
+                <div class="v">All placed points and their (x,y) positions.</div>
+              </div>
+              <div class="row">
+                <div class="k">Heat</div>
+                <div class="v">Heat of each point (and any combined heat logic, if applicable).</div>
+              </div>
+              <div class="row">
+                <div class="k">Composition</div>
+                <div class="v">What each point is made of: image, tag, tag-cluster, or combinations.</div>
+              </div>
+              <div class="row">
+                <div class="k">Dataset</div>
+                <div class="v">The database/archive identifier used to populate the world.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="diagram" style="margin-top:14px" aria-label="Save payload sketch">
+          SaveItem =
+          <br/>
+          - id, collectionName, note
+          <br/>
+          - selectedImageId, selectedXYZ, depthIndex
+          <br/>
+          - excavationMode, radiusRings, selectionStamp
+          <br/>
+          - snapshot: { seeds, points[], heat[], compositions[], datasetId }
+          <br/>
+          → enough to rebuild + re-enter
+        </div>
+      </div>
+    </section>
+
+    <!-- RECOVERY -->
+    <section id="recovery">
+      <div class="grid">
+        <div class="card pad span8">
+          <div class="subhead">IV. Recovery</div>
+          <h2>How you return after drift or total loss</h2>
+          <p class="lead">
+            Recovery is a replay: re-load the dataset, re-apply the snapshot, then navigate back using the saved excavation context.
+            If the world isn’t identical, you land at the closest stable match.
+          </p>
+
+          <div class="list">
+            <div class="row">
+              <div class="k">Step 1</div>
+              <div class="v">Load the dataset referenced by the save.</div>
+            </div>
+            <div class="row">
+              <div class="k">Step 2</div>
+              <div class="v">Apply the snapshot: seeds, point positions, heat values, compositions.</div>
+            </div>
+            <div class="row">
+              <div class="k">Step 3</div>
+              <div class="v">Locate the saved (x,y,z) coordinate and set depth to the saved depth index.</div>
+            </div>
+            <div class="row">
+              <div class="k">Step 4</div>
+              <div class="v">Re-apply excavation mode + selection stamp to restore the original aperture of meaning.</div>
+            </div>
+            <div class="row">
+              <div class="k">Outcome</div>
+              <div class="v">Same place if possible, closest match if not. In both cases: same *context*.</div>
+            </div>
+          </div>
+
+          <div class="quote">
+            <p>
+              <b>Core idea:</b> the saved item is not just a bookmark.
+              It’s a <span class="term t-hot">replayable instrument configuration</span>.
+              Atlas re-enters places the same way a musician replays a patch.
+            </p>
+          </div>
+        </div>
+
+        <div class="card pad span4">
+          <div class="subhead">UI that makes it feel inevitable</div>
+          <h2>Minimal controls, maximal returnability</h2>
+          <p class="lead" style="font-size:14px">
+            The UI is designed so any screenshot contains the information needed to re-find the spot.
+          </p>
+
+          <div class="tiles" style="grid-template-columns:1fr">
+            <div class="tile">
+              <div class="badge b4">Control</div>
+              <h3>Depth Carousel Index</h3>
+              <p>Always visible. A save can say “Depth 14” and you can get there instantly.</p>
+            </div>
+            <div class="tile">
+              <div class="badge b6">Control</div>
+              <h3>Selection Stamp (1,2,3…)</h3>
+              <p>Always visible. It encodes neighborhood rings without forcing math on the user.</p>
+            </div>
+            <div class="tile">
+              <div class="badge b1">Control</div>
+              <h3>Dig Mode</h3>
+              <p>Single / Radius / Layer-wise. Same world, different aperture.</p>
+            </div>
+          </div>
+
+          <div class="diagram" style="margin-top:12px" aria-label="UI summary">
+            Visible at all times:
+            <br/>
+            - <span class="a">Depth</span> index
+            <br/>
+            - <span class="h">Stamp</span> number
+            <br/>
+            - <span class="k">Mode</span> name
+            <br/>
+            + save button on selected image
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;">
+        <div>
+          <b>Atlas Navigation</b> — Traversal, excavation, snapshots
+          <span style="color:rgba(255,255,255,.32)">|</span>
+          <span style="color:rgba(255,255,255,.60)">Find once. Return forever.</span>
+        </div>
+        <div style="font-family:var(--mono); color:rgba(255,255,255,.45)">
+          dig modes • depth carousel • selection stamp • collections • snapshot recovery
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
