@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Atlas — The World Engine</title>
+  <meta name="description" content="Atlas hub: collapse-open the Sphere and Character systems, embedded directly from globe.html and lore.html." />
+
+  <style>
+    :root{
+      --bg0:#070913;
+      --bg1:#0b1022;
+      --panel:rgba(255,255,255,.06);
+      --panel2:rgba(255,255,255,.035);
+      --border:rgba(255,255,255,.10);
+      --text:rgba(255,255,255,.92);
+      --muted:rgba(255,255,255,.68);
+      --muted2:rgba(255,255,255,.52);
+
+      --cyan:#4fd1ff;
+      --violet:#a78bfa;
+      --mint:#34d399;
+      --amber:#fbbf24;
+      --rose:#fb7185;
+      --hot:#ff3df2;
+
+      --shadow: 0 18px 60px rgba(0,0,0,.55);
+      --radius: 18px;
+      --radius2: 26px;
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      color:var(--text);
+      background:
+        radial-gradient(1200px 800px at 14% 0%, rgba(167,139,250,.18), transparent 60%),
+        radial-gradient(1000px 800px at 85% 10%, rgba(79,209,255,.14), transparent 62%),
+        radial-gradient(900px 700px at 40% 110%, rgba(52,211,153,.10), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      letter-spacing:.1px;
+      line-height:1.45;
+    }
+
+    a{color:var(--cyan); text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    .wrap{max-width:1180px; margin:0 auto; padding:28px 18px 84px}
+
+    /* Top bar */
+    .top{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:14px; padding:10px 6px 18px;
+      position:sticky; top:0; z-index:20;
+      backdrop-filter: blur(10px);
+      background: linear-gradient(180deg, rgba(7,9,19,.72), rgba(7,9,19,.28));
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      font-weight:1000;
+      letter-spacing:.2px;
+    }
+    .spark{
+      width:14px; height:14px; border-radius:999px;
+      background: conic-gradient(from 0deg, var(--cyan), var(--violet), var(--mint), var(--cyan));
+      box-shadow: 0 0 0 5px rgba(79,209,255,.10);
+    }
+    .nav{display:flex; gap:10px; flex-wrap:wrap}
+    .nav a{
+      color:var(--muted);
+      font-weight:800;
+      font-size:13px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid transparent;
+    }
+    .nav a:hover{
+      color:var(--text);
+      border-color: rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      text-decoration:none;
+    }
+
+    /* Cards */
+    .card{
+      background: linear-gradient(180deg, var(--panel), var(--panel2));
+      border:1px solid var(--border);
+      border-radius: var(--radius2);
+      box-shadow: var(--shadow);
+    }
+    .pad{padding:18px}
+    .pad-xl{padding:26px 22px}
+
+    /* Hero */
+    h1{
+      margin:10px 0 10px;
+      font-size:44px;
+      line-height:1.03;
+      letter-spacing:-.8px;
+    }
+    @media (max-width: 520px){ h1{font-size:34px} }
+
+    .kicker{
+      display:inline-flex; align-items:center; gap:10px;
+      padding:7px 12px; border-radius:999px;
+      background: rgba(79,209,255,.10);
+      border:1px solid rgba(79,209,255,.22);
+      color: var(--muted);
+      font-size:13px;
+      font-weight:800;
+      width:max-content;
+    }
+    .kdot{
+      width:8px; height:8px; border-radius:999px;
+      background: var(--cyan);
+      box-shadow: 0 0 18px rgba(79,209,255,.65);
+    }
+    .lead{
+      color:var(--muted);
+      font-size:16px;
+      max-width: 86ch;
+      margin:0;
+    }
+
+    .term{
+      font-weight:1000;
+      letter-spacing:.1px;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      display:inline-block;
+      margin:2px 4px 2px 0;
+      white-space:nowrap;
+    }
+    .t-cyan{ color: rgba(79,209,255,.95); border-color: rgba(79,209,255,.25); background: rgba(79,209,255,.08); }
+    .t-violet{ color: rgba(167,139,250,.96); border-color: rgba(167,139,250,.25); background: rgba(167,139,250,.08); }
+    .t-mint{ color: rgba(52,211,153,.96); border-color: rgba(52,211,153,.25); background: rgba(52,211,153,.08); }
+    .t-hot{ color: rgba(255,61,242,.96); border-color: rgba(255,61,242,.30); background: rgba(255,61,242,.10); box-shadow: 0 0 0 6px rgba(255,61,242,.06); }
+
+    /* Collapsible modules */
+    .modules{margin-top:18px; display:grid; gap:14px}
+
+    details.module{
+      border-radius: var(--radius2);
+      border:1px solid rgba(255,255,255,.10);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.035));
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    details.module > summary{
+      list-style:none;
+      cursor:pointer;
+      padding:16px 18px;
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      justify-content:space-between;
+      user-select:none;
+    }
+    details.module > summary::-webkit-details-marker{display:none}
+
+    .sum-left{display:flex; gap:12px; align-items:flex-start}
+    .pill{
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:1000;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      color: rgba(255,255,255,.78);
+      white-space:nowrap;
+      margin-top:2px;
+    }
+    .p1{border-color: rgba(79,209,255,.25); background: rgba(79,209,255,.07)}
+    .p2{border-color: rgba(255,61,242,.25); background: rgba(255,61,242,.07)}
+
+    .sum-title{
+      font-weight:1000;
+      letter-spacing:-.2px;
+      font-size:18px;
+      margin:0;
+    }
+    .sum-desc{
+      margin:6px 0 0;
+      color: var(--muted);
+      font-size:13px;
+      max-width: 84ch;
+    }
+
+    .sum-right{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      align-items:flex-end;
+      min-width: 160px;
+      padding-left:10px;
+    }
+    .links{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      padding:8px 10px;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      font-weight:1000;
+      font-size:12px;
+      letter-spacing:.2px;
+      text-decoration:none;
+    }
+    .btn:hover{filter:brightness(1.08); text-decoration:none}
+    .btn.primary{
+      border-color: rgba(79,209,255,.42);
+      background: rgba(79,209,255,.12);
+      box-shadow: 0 0 0 7px rgba(79,209,255,.07);
+    }
+
+    .chev{
+      width:36px; height:36px; border-radius:12px;
+      display:grid; place-items:center;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      color: rgba(255,255,255,.80);
+      font-weight:1000;
+    }
+    details[open] .chev{transform: rotate(180deg)}
+    .chev{transition: transform .18s ease}
+
+    .module-body{
+      border-top:1px solid rgba(255,255,255,.08);
+      padding:14px 14px 16px;
+      background: rgba(0,0,0,.20);
+    }
+
+    /* iframe container */
+    .framewrap{
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.10);
+      overflow:hidden;
+      background: rgba(0,0,0,.25);
+    }
+    iframe{
+      width:100%;
+      border:0;
+      height: 78vh; /* big enough to read without feeling cramped */
+      display:block;
+      background: transparent;
+    }
+
+    .note{
+      margin:10px 4px 0;
+      color: rgba(255,255,255,.50);
+      font-size:12px;
+      font-family: var(--mono);
+    }
+
+    footer{
+      margin-top:28px;
+      color: rgba(255,255,255,.50);
+      font-size:12px;
+      border-top:1px solid rgba(255,255,255,.10);
+      padding-top:14px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">
+        <span class="spark" aria-hidden="true"></span>
+        <span>Atlas</span>
+      </div>
+      <div class="nav">
+        <a href="#globe">Sphere</a>
+        <a href="#lore">Characters</a>
+      </div>
+    </div>
+
+    <div class="card pad-xl">
+      <div class="kicker"><span class="kdot"></span>Atlas Hub — the World Engine</div>
+      <h1>
+        A <span class="term t-violet">Sphere of Meaning</span> that becomes
+        <span class="term t-mint">Worlds</span> and
+        <span class="term t-hot">People</span>.
+      </h1>
+      <p class="lead">
+        This is the unified front door. The two core systems live below as expandable modules.
+        Each module is also its own standalone page, so you can share the deep link without dragging the whole universe behind it.
+      </p>
+    </div>
+
+    <div class="modules">
+
+      <!-- MODULE 1: GLOBE -->
+      <details class="module" id="globe" data-src="https://regalfyre.github.io/Atlas-Worlds/globe.html">
+        <summary>
+          <div class="sum-left">
+            <div class="pill p1">Atlas Sphere v1</div>
+            <div>
+              <div class="sum-title">Surface Tags, Anchor Images, Interior Settling</div>
+              <p class="sum-desc">
+                Place <span class="term t-cyan">Tag Nodes</span> and <span class="term t-violet">Anchor Nodes</span> on the sphere,
+                tune <span class="term">Heat</span>, and let the archive settle into navigable coordinates.
+              </p>
+            </div>
+          </div>
+
+          <div class="sum-right">
+            <div class="links">
+              <a class="btn primary" href="https://regalfyre.github.io/Atlas-Worlds/globe.html" target="_blank" rel="noopener">Open page</a>
+              <a class="btn" href="#globe">Link</a>
+            </div>
+            <div class="chev">⌄</div>
+          </div>
+        </summary>
+
+        <div class="module-body">
+          <div class="framewrap">
+            <!-- iframe injected lazily -->
+          </div>
+          <div class="note">Tip: open this section via index.html#globe</div>
+        </div>
+      </details>
+
+      <!-- MODULE 2: LORE -->
+      <details class="module" id="lore" data-src="https://regalfyre.github.io/Atlas-Worlds/lore.html">
+        <summary>
+          <div class="sum-left">
+            <div class="pill p2">Atlas Characters</div>
+            <div>
+              <div class="sum-title">Lore Mechanics, Saved States, Resonant Bleed</div>
+              <p class="sum-desc">
+                Persistent identity through <span class="term t-mint">Core Identity</span>,
+                branching via <span class="term t-violet">Lore Archive</span>,
+                and haunted realism through <span class="term t-hot">Bleed</span>.
+              </p>
+            </div>
+          </div>
+
+          <div class="sum-right">
+            <div class="links">
+              <a class="btn primary" href="https://regalfyre.github.io/Atlas-Worlds/lore.html" target="_blank" rel="noopener">Open page</a>
+              <a class="btn" href="#lore">Link</a>
+            </div>
+            <div class="chev">⌄</div>
+          </div>
+        </summary>
+
+        <div class="module-body">
+          <div class="framewrap">
+            <!-- iframe injected lazily -->
+          </div>
+          <div class="note">Tip: open this section via index.html#lore</div>
+        </div>
+      </details>
+
+    </div>
+
+    <footer>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;">
+        <div>
+          <b>Atlas</b> — Hub for Sphere + Characters
+          <span style="color:rgba(255,255,255,.32)">|</span>
+          <span style="color:rgba(255,255,255,.60)">Cartographers of Meaning.</span>
+        </div>
+        <div style="font-family:var(--mono); color:rgba(255,255,255,.45)">
+          globe.html • lore.html • embedded modules • deep links
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // Lazy-inject iframes only when a module is opened (faster load, less chaos).
+    function ensureIframe(detailsEl){
+      const wrap = detailsEl.querySelector(".framewrap");
+      if(!wrap) return;
+      if(wrap.querySelector("iframe")) return;
+
+      const src = detailsEl.getAttribute("data-src");
+      const iframe = document.createElement("iframe");
+      iframe.src = src;
+      iframe.loading = "lazy";
+      iframe.referrerPolicy = "no-referrer";
+      wrap.appendChild(iframe);
+    }
+
+    // Open by hash (#globe or #lore), load iframe, and scroll it into view.
+    function openFromHash(){
+      const hash = (location.hash || "").replace("#","");
+      if(!hash) return;
+
+      const target = document.getElementById(hash);
+      if(!target || target.tagName.toLowerCase() !== "details") return;
+
+      target.open = true;
+      ensureIframe(target);
+      setTimeout(() => target.scrollIntoView({behavior:"smooth", block:"start"}), 80);
+    }
+
+    // Bind toggles
+    document.querySelectorAll("details.module").forEach(d => {
+      d.addEventListener("toggle", () => {
+        if(d.open) ensureIframe(d);
+      });
+    });
+
+    window.addEventListener("hashchange", openFromHash);
+    openFromHash();
+  </script>
+</body>
+</html>
