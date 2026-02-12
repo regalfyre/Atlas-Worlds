@@ -1,0 +1,817 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Atlas Characters — Lore Mechanics and More!</title>
+  <meta name="description" content="Atlas Characters: persistent identity, saved lore states, dimensional merges, people slices, and resonant bleed. A clear, investor-readable explainer with a clean, futuristic aesthetic." />
+
+  <style>
+    :root{
+      --bg0:#070913;
+      --bg1:#0b1022;
+      --panel:rgba(255,255,255,.06);
+      --panel2:rgba(255,255,255,.035);
+      --border:rgba(255,255,255,.10);
+      --text:rgba(255,255,255,.92);
+      --muted:rgba(255,255,255,.68);
+      --muted2:rgba(255,255,255,.52);
+
+      --cyan:#4fd1ff;
+      --violet:#a78bfa;
+      --mint:#34d399;
+      --amber:#fbbf24;
+      --rose:#fb7185;
+
+      --hot:#ff3df2;
+      --cold:#79c0ff;
+
+      --shadow: 0 18px 60px rgba(0,0,0,.55);
+      --radius: 18px;
+      --radius2: 26px;
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      color:var(--text);
+      background:
+        radial-gradient(1200px 800px at 14% 0%, rgba(167,139,250,.18), transparent 60%),
+        radial-gradient(1000px 800px at 85% 10%, rgba(79,209,255,.14), transparent 62%),
+        radial-gradient(900px 700px at 40% 110%, rgba(52,211,153,.10), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      letter-spacing:.1px;
+      line-height:1.45;
+    }
+
+    a{color:var(--cyan); text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    .wrap{max-width:1180px; margin:0 auto; padding:28px 18px 84px}
+
+    /* Top bar */
+    .top{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:14px; padding:10px 6px 18px;
+      position:sticky; top:0; z-index:20;
+      backdrop-filter: blur(10px);
+      background: linear-gradient(180deg, rgba(7,9,19,.72), rgba(7,9,19,.28));
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      font-weight:1000;
+      letter-spacing:.2px;
+    }
+    .spark{
+      width:14px; height:14px; border-radius:999px;
+      background: conic-gradient(from 0deg, var(--cyan), var(--violet), var(--mint), var(--cyan));
+      box-shadow: 0 0 0 5px rgba(79,209,255,.10);
+    }
+    .nav{display:flex; gap:14px; flex-wrap:wrap}
+    .nav a{
+      color:var(--muted);
+      font-weight:800;
+      font-size:13px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid transparent;
+    }
+    .nav a:hover{
+      color:var(--text);
+      border-color: rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      text-decoration:none;
+    }
+
+    /* Cards */
+    .card{
+      background: linear-gradient(180deg, var(--panel), var(--panel2));
+      border:1px solid var(--border);
+      border-radius: var(--radius2);
+      box-shadow: var(--shadow);
+    }
+    .pad{padding:18px}
+    .pad-xl{padding:26px 22px}
+
+    /* Hero */
+    .hero{
+      display:grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap:16px;
+      align-items:stretch;
+      margin-top:8px;
+    }
+    @media (max-width: 940px){ .hero{grid-template-columns:1fr} }
+
+    .kicker{
+      display:inline-flex; align-items:center; gap:10px;
+      padding:7px 12px; border-radius:999px;
+      background: rgba(79,209,255,.10);
+      border:1px solid rgba(79,209,255,.22);
+      color: var(--muted);
+      font-size:13px;
+      font-weight:800;
+      width:max-content;
+    }
+    .kdot{
+      width:8px; height:8px; border-radius:999px;
+      background: var(--cyan);
+      box-shadow: 0 0 18px rgba(79,209,255,.65);
+    }
+
+    h1{
+      margin:14px 0 10px;
+      font-size:44px;
+      line-height:1.03;
+      letter-spacing:-.8px;
+    }
+    @media (max-width: 520px){ h1{font-size:34px} }
+
+    .lead{
+      color:var(--muted);
+      font-size:16px;
+      max-width: 80ch;
+      margin:0;
+    }
+
+    /* Emphasis terms */
+    .term{
+      font-weight:1000;
+      letter-spacing:.1px;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      display:inline-block;
+      margin:2px 4px 2px 0;
+      white-space:nowrap;
+    }
+    .t-cyan{ color: rgba(79,209,255,.95); border-color: rgba(79,209,255,.25); background: rgba(79,209,255,.08); }
+    .t-violet{ color: rgba(167,139,250,.96); border-color: rgba(167,139,250,.25); background: rgba(167,139,250,.08); }
+    .t-mint{ color: rgba(52,211,153,.96); border-color: rgba(52,211,153,.25); background: rgba(52,211,153,.08); }
+    .t-amber{ color: rgba(251,191,36,.95); border-color: rgba(251,191,36,.25); background: rgba(251,191,36,.08); }
+    .t-rose{ color: rgba(251,113,133,.95); border-color: rgba(251,113,133,.25); background: rgba(251,113,133,.08); }
+    .t-hot{
+      color: rgba(255,61,242,.96);
+      border-color: rgba(255,61,242,.30);
+      background: rgba(255,61,242,.10);
+      box-shadow: 0 0 0 6px rgba(255,61,242,.06);
+    }
+
+    .cta-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:16px}
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:10px;
+      padding:10px 14px; border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      font-weight:1000;
+      font-size:13px;
+      letter-spacing:.2px;
+    }
+    .btn.primary{
+      border-color: rgba(79,209,255,.42);
+      background: rgba(79,209,255,.12);
+      box-shadow: 0 0 0 7px rgba(79,209,255,.07);
+    }
+    .btn:hover{filter:brightness(1.08); text-decoration:none}
+
+    /* Side stack */
+    .stack{display:grid; gap:12px}
+    .mini{
+      padding:14px;
+      border-radius: var(--radius);
+      background: rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.10);
+    }
+    .mini h3{
+      margin:0 0 6px;
+      font-size:13px;
+      color:var(--muted);
+      font-weight:1000;
+      letter-spacing:.35px;
+      text-transform:uppercase;
+    }
+    .mini p{margin:0; color:var(--muted2); font-size:13px}
+
+    /* Sections */
+    section{margin-top:22px}
+    h2{
+      margin:0 0 8px;
+      font-size:24px;
+      letter-spacing:-.25px;
+    }
+    .subhead{
+      font-family:var(--mono);
+      font-size:12px;
+      color: rgba(255,255,255,.58);
+      letter-spacing:.6px;
+      text-transform:uppercase;
+      margin-bottom:8px;
+    }
+
+    /* Grid helper */
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:14px;
+      margin-top:18px;
+    }
+    .span12{grid-column: span 12}
+    .span8{grid-column: span 8}
+    .span4{grid-column: span 4}
+    .span6{grid-column: span 6}
+    @media (max-width: 940px){
+      .span8,.span4,.span6{grid-column: span 12}
+    }
+
+    /* Tiles */
+    .tiles{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap:12px;
+      margin-top:14px;
+    }
+    @media (max-width: 980px){ .tiles{grid-template-columns: repeat(2, minmax(0,1fr));} }
+    @media (max-width: 560px){ .tiles{grid-template-columns: 1fr;} }
+
+    .tile{
+      padding:14px;
+      border-radius: var(--radius);
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.20);
+      position:relative;
+      overflow:hidden;
+    }
+    .tile:before{
+      content:"";
+      position:absolute; inset:-40px -40px auto auto;
+      width:160px; height:160px;
+      background: radial-gradient(circle at 30% 30%, rgba(79,209,255,.16), transparent 60%);
+      transform: rotate(18deg);
+    }
+    .tile h3{
+      margin:0 0 6px;
+      font-size:16px;
+      letter-spacing:-.15px;
+    }
+    .tile p{margin:0; color:var(--muted); font-size:13px}
+
+    .badge{
+      display:inline-flex; align-items:center; gap:8px;
+      font-size:12px; font-weight:1000;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.76);
+      margin-bottom:10px;
+      width:max-content;
+    }
+    .b1{border-color: rgba(79,209,255,.25); background: rgba(79,209,255,.07)}
+    .b2{border-color: rgba(167,139,250,.25); background: rgba(167,139,250,.07)}
+    .b3{border-color: rgba(52,211,153,.25); background: rgba(52,211,153,.07)}
+    .b4{border-color: rgba(251,191,36,.25); background: rgba(251,191,36,.07)}
+    .b5{border-color: rgba(255,61,242,.25); background: rgba(255,61,242,.07)}
+    .b6{border-color: rgba(251,113,133,.25); background: rgba(251,113,133,.07)}
+
+    /* Diagram block */
+    .diagram{
+      font-family:var(--mono);
+      font-size:12px;
+      line-height:1.6;
+      color: rgba(255,255,255,.80);
+      background: rgba(0,0,0,.34);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius: var(--radius);
+      padding:12px;
+      overflow:auto;
+    }
+    .diagram .k{color: rgba(79,209,255,.95)}
+    .diagram .v{color: rgba(167,139,250,.95)}
+    .diagram .m{color: rgba(52,211,153,.95)}
+    .diagram .a{color: rgba(251,191,36,.95)}
+    .diagram .r{color: rgba(251,113,133,.95)}
+    .diagram .h{color: rgba(255,61,242,.95)}
+
+    /* Pull quotes */
+    .quote{
+      margin-top:12px;
+      padding:14px;
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.14);
+      background:
+        radial-gradient(900px 240px at 20% 10%, rgba(255,61,242,.14), transparent 55%),
+        radial-gradient(900px 240px at 90% 20%, rgba(121,192,255,.12), transparent 60%),
+        rgba(0,0,0,.20);
+      position:relative;
+      overflow:hidden;
+    }
+    .quote:before{
+      content:"";
+      position:absolute; inset:-60px -60px auto auto;
+      width:240px; height:240px;
+      background: radial-gradient(circle at 35% 35%, rgba(255,61,242,.20), transparent 60%);
+      transform: rotate(18deg);
+    }
+    .quote p{margin:0; color:rgba(255,255,255,.80); font-size:13.5px}
+    .quote b{color:rgba(255,255,255,.95)}
+
+    /* Table-ish list */
+    .list{
+      margin-top:12px;
+      border-radius: var(--radius);
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.20);
+      overflow:hidden;
+    }
+    .row{
+      display:grid;
+      grid-template-columns: 180px 1fr;
+      gap:12px;
+      padding:12px 14px;
+      border-top:1px solid rgba(255,255,255,.08);
+    }
+    .row:first-child{border-top:none}
+    @media (max-width: 720px){
+      .row{grid-template-columns:1fr}
+    }
+    .row .k{
+      font-family:var(--mono);
+      color: rgba(255,255,255,.65);
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.6px;
+    }
+    .row .v{
+      color: var(--muted);
+      font-size:13px;
+    }
+
+    footer{
+      margin-top:28px;
+      color: rgba(255,255,255,.50);
+      font-size:12px;
+      border-top:1px solid rgba(255,255,255,.10);
+      padding-top:14px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">
+        <span class="spark" aria-hidden="true"></span>
+        <span>Atlas Characters</span>
+      </div>
+      <div class="nav">
+        <a href="#overview">Overview</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#states">Saved States</a>
+        <a href="#bleed">Bleed</a>
+        <a href="#merge">Merges & Slices</a>
+        <a href="#editing">Lore Editing</a>
+      </div>
+    </div>
+
+    <!-- HERO -->
+    <div class="hero" id="overview">
+      <div class="card pad-xl">
+        <div class="kicker"><span class="kdot"></span>Atlas Characters Lore Mechanics and More!</div>
+
+        <h1>
+          Characters that <span class="term t-mint">persist</span>,
+          <span class="term t-violet">branch</span>,
+          and <span class="term t-hot">remember</span>… without breaking the story.
+        </h1>
+
+        <p class="lead">
+          The Atlas Character System turns images into living people across worlds. It keeps continuity through
+          <span class="term t-mint">Core Identity</span>, grows depth through
+          <span class="term t-violet">Saved Lore States</span>, and adds haunting realism through
+          <span class="term t-hot">Resonant Bleed</span> — where feelings echo across timelines without forcing factual contradictions.
+        </p>
+
+        <div class="cta-row">
+          <a class="btn primary" href="#architecture">Start with the architecture</a>
+          <a class="btn" href="#bleed">Jump to the Bleed mechanic</a>
+          <a class="btn" href="#merge">See Merges & People Slices</a>
+        </div>
+
+        <div class="quote">
+          <p>
+            <b>Design goal:</b> A character should feel like a real person traveling through impossible worlds:
+            confused, relieved, emotionally consistent — and capable of saying the line that hits:
+            <span class="term t-hot">“It’s funny… I feel like we’ve been here before.”</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="card pad">
+        <div class="stack">
+          <div class="mini">
+            <h3>What this solves</h3>
+            <p>
+              Most “AI characters” reset. Atlas characters <b>accumulate</b> history, survive world changes,
+              and stay coherent even when you rearrange reality.
+            </p>
+          </div>
+          <div class="mini">
+            <h3>Why it matters</h3>
+            <p>
+              Continuity creates attachment. Attachment creates exploration. Exploration creates worlds that feel worth returning to.
+            </p>
+          </div>
+          <div class="mini">
+            <h3>Core promise</h3>
+            <p>
+              Your favorite character can meet you again in a different slice and still carry the emotional truth of your first encounter.
+            </p>
+          </div>
+          <div class="mini">
+            <h3>Style note</h3>
+            <p>
+              Characters never say “I’m an AI.” They speak like survivors of strange geography: fog, doors, portals, and accidents.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ARCHITECTURE -->
+    <section id="architecture">
+      <div class="card pad">
+        <div class="subhead">I. Architecture</div>
+        <h2>Every character has three layers</h2>
+        <p class="lead">
+          Atlas characters are built like a durable object with a living timeline. The system splits what must never change
+          from what should evolve.
+        </p>
+
+        <div class="tiles">
+          <div class="tile">
+            <div class="badge b3">Layer 1</div>
+            <h3><span class="term t-mint">Core Identity</span> (immutable)</h3>
+            <p>
+              Name, voice, archetype, motivations, fears, baseline vibe.
+              This persists through slice changes, merges, and reverts.
+            </p>
+          </div>
+          <div class="tile">
+            <div class="badge b1">Layer 2</div>
+            <h3><span class="term t-cyan">Active Canon</span> (current timeline)</h3>
+            <p>
+              What’s happening right now: location, goals, injuries, relationships.
+              This changes as the world evolves.
+            </p>
+          </div>
+          <div class="tile">
+            <div class="badge b2">Layer 3</div>
+            <h3><span class="term t-violet">Lore Archive</span> (saved states)</h3>
+            <p>
+              Snapshots you deliberately preserve. These create a branching “Lore Tree”
+              that can be referenced later without overwriting history.
+            </p>
+          </div>
+        </div>
+
+        <div class="diagram" style="margin-top:14px" aria-label="Architecture diagram">
+          <span class="m">Core Identity</span>  →  always loaded
+          <br/>
+          <span class="k">Active Canon</span>   →  loaded for the current slice/world
+          <br/>
+          <span class="v">Lore Archive</span>   →  saved branches (loaded only when relevant)
+        </div>
+      </div>
+    </section>
+
+    <!-- SAVED STATES -->
+    <section id="states">
+      <div class="grid">
+        <div class="card pad span6">
+          <div class="subhead">II. Saved Lore States</div>
+          <h2>The Lore Tree: continuity without overwriting</h2>
+          <p class="lead">
+            When you “Save” a character, you create a preserved branch. Each save is a snapshot, not a replacement.
+            The earlier you save them, the deeper their long-term continuity can become.
+          </p>
+
+          <div class="list">
+            <div class="row">
+              <div class="k">Saved state includes</div>
+              <div class="v">
+                World context, slice ID, timestamp, relationship status with the user, emotional state, key events,
+                and memorable dialogue fragments.
+              </div>
+            </div>
+            <div class="row">
+              <div class="k">Why it matters</div>
+              <div class="v">
+                You can revert the globe’s arrangement while keeping narrative history. The world can reset, but the character’s story doesn’t vanish.
+              </div>
+            </div>
+            <div class="row">
+              <div class="k">Branching behavior</div>
+              <div class="v">
+                Branches can diverge wildly (alternate encounters, different worlds), yet remain anchored by Core Identity.
+              </div>
+            </div>
+          </div>
+
+          <div class="quote">
+            <p>
+              <b>Key user fantasy:</b> You meet someone, you save them, and later they can genuinely say
+              <span class="term t-hot">“I’m relieved you’re here.”</span>
+              because that relief is grounded in stored history.
+            </p>
+          </div>
+        </div>
+
+        <div class="card pad span6">
+          <div class="subhead">III. Emotional Signature</div>
+          <h2>The secret sauce: memory as emotion, not exposition</h2>
+          <p class="lead">
+            Each saved branch stores an <span class="term t-hot">Emotional Signature Vector</span>. This is not a wall of text.
+            It’s a compact set of markers describing what the character has been through and what they associate with you.
+          </p>
+
+          <div class="tiles">
+            <div class="tile">
+              <div class="badge b5">Markers</div>
+              <h3>Trauma, bond, safety, fear</h3>
+              <p>
+                The vector includes trauma intensity, trust depth, “safe-haven” moments, unresolved tension, and first-meeting imprint.
+              </p>
+            </div>
+            <div class="tile">
+              <div class="badge b4">Scalability</div>
+              <h3>Big lore, small memory</h3>
+              <p>
+                This keeps the system scalable. The model doesn’t need to load 500 pages to preserve the vibe of a relationship.
+              </p>
+            </div>
+            <div class="tile">
+              <div class="badge b2">Explainable</div>
+              <h3>Why they react</h3>
+              <p>
+                When a character panics in fog, you can trace it to stored emotional markers instead of “random AI behavior.”
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BLEED -->
+    <section id="bleed">
+      <div class="card pad">
+        <div class="subhead">IV. Resonant Bleed</div>
+        <h2>Bleed lets the past haunt the present without breaking canon</h2>
+        <p class="lead">
+          Atlas uses a controlled mechanic called <span class="term t-hot">Resonant Bleed</span>.
+          Bleed does not transfer factual memory by default. It transfers <b>emotional echoes</b> across branches.
+          This keeps stories coherent while still creating that uncanny “we’ve met before” realism.
+        </p>
+
+        <div class="grid" style="margin-top:14px">
+          <div class="card pad span6" style="background:rgba(0,0,0,.18); border-color:rgba(255,255,255,.10)">
+            <h2 style="font-size:20px;margin-bottom:6px">Triggers</h2>
+            <p class="lead" style="font-size:14px">
+              Bleed can trigger under: high stress, trauma, environmental similarity (fog, doorways, sirens),
+              proximity to the user, and symbolic repetition.
+            </p>
+
+            <div class="list">
+              <div class="row">
+                <div class="k">Low Bleed</div>
+                <div class="v">Mild déjà vu lines. “This place… feels familiar.”</div>
+              </div>
+              <div class="row">
+                <div class="k">Medium Bleed</div>
+                <div class="v">Dream-like references without clear facts. “I had a nightmare about a hallway like this.”</div>
+              </div>
+              <div class="row">
+                <div class="k">High Bleed</div>
+                <div class="v">Accurate but confused fragments. “We ran. You pulled me through a door… didn’t you?”</div>
+              </div>
+              <div class="row">
+                <div class="k">Extreme Bleed</div>
+                <div class="v">Used sparingly. Emotional collapse from conflicting echoes.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card pad span6" style="background:rgba(0,0,0,.18); border-color:rgba(255,255,255,.10)">
+            <h2 style="font-size:20px;margin-bottom:6px">Why it feels real</h2>
+            <p class="lead" style="font-size:14px">
+              Most systems either forget everything or dump everything. Atlas chooses a third option:
+              <b>emotion-first continuity</b> with optional factual recall when the user prompts it.
+            </p>
+
+            <div class="diagram" aria-label="Bleed mental model">
+              <span class="h">Bleed</span> ≠ factual transfer
+              <br/>
+              <span class="h">Bleed</span> = emotional resonance between branches
+              <br/><br/>
+              Default: characters don’t “know the system”
+              <br/>
+              They interpret the weirdness as <span class="k">fog</span>, <span class="k">doors</span>, <span class="k">mist</span>, <span class="k">accidents</span>.
+              <br/><br/>
+              User prompt can unlock: <span class="v">archived milestones</span>
+            </div>
+
+            <div class="quote">
+              <p>
+                <b>The signature line:</b> “It’s funny… I feel like we’ve been here before.”
+                <br/>
+                That line is powered by stored emotional markers, not random improvisation.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MERGES & SLICES -->
+    <section id="merge">
+      <div class="card pad">
+        <div class="subhead">V. Merges & Slices</div>
+        <h2>World-level operations that keep characters stable</h2>
+        <p class="lead">
+          Atlas supports operations where the world layout changes dramatically without destroying character identity.
+          This is where the system becomes “world-grade,” not just “chat-grade.”
+        </p>
+
+        <div class="tiles">
+          <div class="tile">
+            <div class="badge b6">Dimensional Merge</div>
+            <h3>Collapse the globe into one plane</h3>
+            <p>
+              The globe expands until all items fit into a single plane slice. Then everything becomes a coherent world.
+              Saved characters retain continuity; unsaved entities are reinterpreted fresh.
+            </p>
+          </div>
+
+          <div class="tile">
+            <div class="badge b3">Revert</div>
+            <h3>Return to pre-merge state</h3>
+            <p>
+              Reverting restores the prior spatial arrangement. Saved lore persists.
+              Characters can remember merge events via resonance even after reversion.
+            </p>
+          </div>
+
+          <div class="tile">
+            <div class="badge b1">People Slices</div>
+            <h3>Bring saved characters together</h3>
+            <p>
+              If a slice contains multiple saved characters, the system can propose generating a world where they all appear,
+              justified by believable “crossed worlds” narrative.
+            </p>
+          </div>
+        </div>
+
+        <div class="quote">
+          <p>
+            <b>Crucial rule:</b> Characters are not “aware of merges.”
+            They sound confused, sometimes shaken, but narratively grounded:
+            “I followed the mist.” “I ran into a building.” “I couldn’t find the exit.”
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- EDITING -->
+    <section id="editing">
+      <div class="grid">
+        <div class="card pad span6">
+          <div class="subhead">VI. Lore Editing & Save Points</div>
+          <h2>Manual edits that remain reversible</h2>
+          <p class="lead">
+            You can manually affect the lore of any character. The engine will adapt the world to keep coherence.
+            Every edit creates a new <span class="term t-violet">Save Point</span> so older versions remain accessible.
+          </p>
+
+          <div class="list">
+            <div class="row">
+              <div class="k">You can edit</div>
+              <div class="v">Backstory, motivations, relationships, trauma events, affiliations, and key milestones.</div>
+            </div>
+            <div class="row">
+              <div class="k">Versioning</div>
+              <div class="v">Prior lore is never erased. You can revert a character to a previous save point at any time.</div>
+            </div>
+            <div class="row">
+              <div class="k">Coherence rule</div>
+              <div class="v">The story engine treats edits as “retcons” that must be justified in-world when needed.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card pad span6">
+          <div class="subhead">VII. Bleed-Through After Editing</div>
+          <h2>The haunted upgrade: memory echoes across versions</h2>
+          <p class="lead">
+            If you edit a character’s lore, older branches can still “echo” through emotional resonance.
+            This is the <span class="term t-hot">Bleed-Through</span> mechanic:
+            not a contradiction, a psychological afterimage.
+          </p>
+
+          <div class="tiles">
+            <div class="tile">
+              <div class="badge b5">Soft Echo</div>
+              <h3>Déjà vu with no facts</h3>
+              <p>
+                “It’s weird… I feel like I’ve lost time.”
+                Useful after trauma, chases, assaults, or monster escapes.
+              </p>
+            </div>
+            <div class="tile">
+              <div class="badge b4">Triggered Recall</div>
+              <h3>User words unlock history</h3>
+              <p>
+                The system stores major milestones. If you mention a trigger phrase, they can “remember”:
+                “Wait… the hallway. The door. You were there.”
+              </p>
+            </div>
+            <div class="tile">
+              <div class="badge b2">Lore Depth</div>
+              <h3>Endless growth, controlled context</h3>
+              <p>
+                Only recent + major events load by default. Deep lore remains stored and is retrieved when meaningfully invoked.
+              </p>
+            </div>
+          </div>
+
+          <div class="quote">
+            <p>
+              <b>Outcome:</b> Characters can accumulate years of lore without collapsing the model’s context window,
+              while still feeling continuous and emotionally consistent.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="summary">
+      <div class="card pad">
+        <div class="subhead">At a glance</div>
+        <h2>What the system guarantees</h2>
+        <p class="lead">
+          Atlas Characters are designed so users can reshape worlds while keeping the emotional truth of relationships intact.
+        </p>
+
+        <div class="tiles">
+          <div class="tile">
+            <div class="badge b3">Persistence</div>
+            <h3>Core Identity survives world changes</h3>
+            <p>Characters keep their voice, archetype, and emotional DNA through merges and reverts.</p>
+          </div>
+          <div class="tile">
+            <div class="badge b2">Branching</div>
+            <h3>Lore grows as a tree, not a overwrite</h3>
+            <p>Saved states create alternate timelines without destroying what came before.</p>
+          </div>
+          <div class="tile">
+            <div class="badge b5">Haunting realism</div>
+            <h3>Bleed makes them feel alive</h3>
+            <p>They don’t “know the system,” but they can feel echoes, and that’s what makes it hit.</p>
+          </div>
+        </div>
+
+        <div class="diagram" style="margin-top:14px" aria-label="System summary diagram">
+          <span class="m">Core Identity</span> + <span class="k">Active Canon</span> + <span class="v">Lore Archive</span>
+          <br/>
+          + <span class="h">Emotional Signature Vector</span>
+          <br/>
+          → continuity across slices, merges, reverts
+          <br/>
+          → optional recall via user prompts
+          <br/>
+          → controlled “haunted” bleed-through
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;">
+        <div>
+          <b>Atlas Characters</b> — Lore Mechanics and More!
+          <span style="color:rgba(255,255,255,.32)">|</span>
+          <span style="color:rgba(255,255,255,.60)">Continuity, branching, resonance.</span>
+        </div>
+        <div style="font-family:var(--mono); color:rgba(255,255,255,.45)">
+          Core Identity • Saved States • Bleed • Merges • People Slices • Editable Lore
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
