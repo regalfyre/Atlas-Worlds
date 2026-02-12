@@ -1,0 +1,869 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Atlas Plane v1 — Composite Points, Heat, and Stalagmite Aggregation</title>
+  <meta name="description" content="Atlas Plane v1: found a plane on one or more images/tags, place composite points (images + tags + tag-clusters), tune heat, and watch the archive aggregate into stalagmites across a navigable board." />
+
+  <style>
+    :root{
+      --bg0:#070913;
+      --bg1:#0b1022;
+      --panel:rgba(255,255,255,.06);
+      --panel2:rgba(255,255,255,.035);
+      --border:rgba(255,255,255,.10);
+      --text:rgba(255,255,255,.92);
+      --muted:rgba(255,255,255,.68);
+      --muted2:rgba(255,255,255,.52);
+
+      --cyan:#4fd1ff;
+      --violet:#a78bfa;
+      --mint:#34d399;
+      --amber:#fbbf24;
+      --rose:#fb7185;
+
+      --shadow: 0 18px 60px rgba(0,0,0,.55);
+      --radius: 18px;
+      --radius2: 26px;
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      color:var(--text);
+      background:
+        radial-gradient(1200px 800px at 14% 0%, rgba(167,139,250,.18), transparent 60%),
+        radial-gradient(1000px 800px at 85% 10%, rgba(79,209,255,.14), transparent 62%),
+        radial-gradient(900px 700px at 40% 110%, rgba(52,211,153,.10), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      letter-spacing:.1px;
+      line-height:1.45;
+    }
+
+    a{color:var(--cyan); text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    .wrap{max-width:1180px; margin:0 auto; padding:28px 18px 84px}
+
+    /* Top bar */
+    .top{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:14px; padding:10px 6px 18px;
+      position:sticky; top:0; z-index:20;
+      backdrop-filter: blur(10px);
+      background: linear-gradient(180deg, rgba(7,9,19,.72), rgba(7,9,19,.28));
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      font-weight:1000; letter-spacing:.2px;
+    }
+    .spark{
+      width:14px; height:14px; border-radius:999px;
+      background: conic-gradient(from 0deg, var(--cyan), var(--violet), var(--mint), var(--cyan));
+      box-shadow: 0 0 0 5px rgba(79,209,255,.10);
+    }
+    .nav{display:flex; gap:14px; flex-wrap:wrap}
+    .nav a{
+      color:var(--muted);
+      font-weight:800;
+      font-size:13px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid transparent;
+    }
+    .nav a:hover{
+      color:var(--text);
+      border-color: rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      text-decoration:none;
+    }
+
+    /* Cards */
+    .card{
+      background: linear-gradient(180deg, var(--panel), var(--panel2));
+      border:1px solid var(--border);
+      border-radius: var(--radius2);
+      box-shadow: var(--shadow);
+    }
+    .pad{padding:18px}
+    .pad-xl{padding:26px 22px}
+
+    /* Hero */
+    .hero{
+      display:grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap:16px;
+      align-items:stretch;
+      margin-top:8px;
+    }
+    @media (max-width: 940px){ .hero{grid-template-columns:1fr} }
+
+    .kicker{
+      display:inline-flex; align-items:center; gap:10px;
+      padding:7px 12px; border-radius:999px;
+      background: rgba(79,209,255,.10);
+      border:1px solid rgba(79,209,255,.22);
+      color: var(--muted);
+      font-size:13px;
+      font-weight:800;
+      width:max-content;
+    }
+    .kdot{
+      width:8px; height:8px; border-radius:999px;
+      background: var(--cyan);
+      box-shadow: 0 0 18px rgba(79,209,255,.65);
+    }
+
+    h1{
+      margin:14px 0 10px;
+      font-size:44px;
+      line-height:1.03;
+      letter-spacing:-.8px;
+    }
+    @media (max-width: 520px){ h1{font-size:34px} }
+
+    .lead{
+      color:var(--muted);
+      font-size:16px;
+      max-width: 86ch;
+      margin:0;
+    }
+
+    /* Emphasis terms */
+    .term{
+      font-weight:1000;
+      letter-spacing:.1px;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      display:inline-block;
+      margin:2px 4px 2px 0;
+      white-space:nowrap;
+    }
+    .t-cyan{ color: rgba(79,209,255,.95); border-color: rgba(79,209,255,.25); background: rgba(79,209,255,.08); }
+    .t-violet{ color: rgba(167,139,250,.96); border-color: rgba(167,139,250,.25); background: rgba(167,139,250,.08); }
+    .t-mint{ color: rgba(52,211,153,.96); border-color: rgba(52,211,153,.25); background: rgba(52,211,153,.08); }
+    .t-amber{ color: rgba(251,191,36,.95); border-color: rgba(251,191,36,.25); background: rgba(251,191,36,.08); }
+    .t-rose{ color: rgba(251,113,133,.95); border-color: rgba(251,113,133,.25); background: rgba(251,113,133,.08); }
+
+    .cta-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:16px}
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:10px;
+      padding:10px 14px; border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      font-weight:1000;
+      font-size:13px;
+      letter-spacing:.2px;
+      cursor:pointer;
+    }
+    .btn.primary{
+      border-color: rgba(79,209,255,.42);
+      background: rgba(79,209,255,.12);
+      box-shadow: 0 0 0 7px rgba(79,209,255,.07);
+    }
+    .btn:hover{filter:brightness(1.08); text-decoration:none}
+
+    /* Side stack */
+    .stack{display:grid; gap:12px}
+    .mini{
+      padding:14px;
+      border-radius: var(--radius);
+      background: rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.10);
+    }
+    .mini h3{
+      margin:0 0 6px;
+      font-size:13px;
+      color:var(--muted);
+      font-weight:1000;
+      letter-spacing:.35px;
+      text-transform:uppercase;
+    }
+    .mini p{margin:0; color:var(--muted2); font-size:13px}
+
+    /* Sections */
+    section{margin-top:22px}
+    h2{
+      margin:0 0 8px;
+      font-size:24px;
+      letter-spacing:-.25px;
+    }
+    .subhead{
+      font-family:var(--mono);
+      font-size:12px;
+      color: rgba(255,255,255,.58);
+      letter-spacing:.6px;
+      text-transform:uppercase;
+      margin-bottom:8px;
+    }
+
+    /* Grid helper */
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:14px;
+      margin-top:18px;
+    }
+    .span12{grid-column: span 12}
+    .span8{grid-column: span 8}
+    .span4{grid-column: span 4}
+    .span6{grid-column: span 6}
+    @media (max-width: 940px){
+      .span8,.span4,.span6{grid-column: span 12}
+    }
+
+    /* Tiles */
+    .tiles{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap:12px;
+      margin-top:14px;
+    }
+    @media (max-width: 980px){ .tiles{grid-template-columns: repeat(2, minmax(0,1fr));} }
+    @media (max-width: 560px){ .tiles{grid-template-columns: 1fr;} }
+
+    .tile{
+      padding:14px;
+      border-radius: var(--radius);
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.20);
+      position:relative;
+      overflow:hidden;
+    }
+    .tile:before{
+      content:"";
+      position:absolute; inset:-40px -40px auto auto;
+      width:160px; height:160px;
+      background: radial-gradient(circle at 30% 30%, rgba(79,209,255,.16), transparent 60%);
+      transform: rotate(18deg);
+    }
+    .tile h3{
+      margin:0 0 6px;
+      font-size:16px;
+      letter-spacing:-.15px;
+    }
+    .tile p{margin:0; color:var(--muted); font-size:13px}
+
+    .badge{
+      display:inline-flex; align-items:center; gap:8px;
+      font-size:12px; font-weight:1000;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.76);
+      margin-bottom:10px;
+      width:max-content;
+    }
+    .b1{border-color: rgba(79,209,255,.25); background: rgba(79,209,255,.07)}
+    .b2{border-color: rgba(167,139,250,.25); background: rgba(167,139,250,.07)}
+    .b3{border-color: rgba(52,211,153,.25); background: rgba(52,211,153,.07)}
+    .b4{border-color: rgba(251,191,36,.25); background: rgba(251,191,36,.07)}
+    .b5{border-color: rgba(251,113,133,.25); background: rgba(251,113,133,.07)}
+
+    /* Diagram block */
+    .diagram{
+      font-family:var(--mono);
+      font-size:12px;
+      line-height:1.6;
+      color: rgba(255,255,255,.80);
+      background: rgba(0,0,0,.34);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius: var(--radius);
+      padding:12px;
+      overflow:auto;
+    }
+    .diagram .k{color: rgba(79,209,255,.95)}
+    .diagram .v{color: rgba(167,139,250,.95)}
+    .diagram .m{color: rgba(52,211,153,.95)}
+    .diagram .a{color: rgba(251,191,36,.95)}
+    .diagram .r{color: rgba(251,113,133,.95)}
+
+    /* Table-ish list */
+    .list{
+      margin-top:12px;
+      border-radius: var(--radius);
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.20);
+      overflow:hidden;
+    }
+    .row{
+      display:grid;
+      grid-template-columns: 220px 1fr;
+      gap:12px;
+      padding:12px 14px;
+      border-top:1px solid rgba(255,255,255,.08);
+    }
+    .row:first-child{border-top:none}
+    @media (max-width: 720px){
+      .row{grid-template-columns:1fr}
+    }
+    .row .k{
+      font-family:var(--mono);
+      color: rgba(255,255,255,.65);
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.6px;
+    }
+    .row .v{
+      color: var(--muted);
+      font-size:13px;
+    }
+
+    /* “Spec” blocks */
+    .spec{
+      margin-top:12px;
+      padding:14px;
+      border-radius: var(--radius);
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.20);
+    }
+    .spec h3{
+      margin:0 0 8px;
+      font-size:14px;
+      letter-spacing:.2px;
+    }
+    .spec ul{margin:0; padding-left:18px; color:var(--muted); font-size:13px}
+    .spec li{margin:6px 0}
+
+    /* Collapsibles */
+    details{
+      margin-top:14px;
+      border-radius: var(--radius2);
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      overflow:hidden;
+    }
+    details[open]{ background: rgba(0,0,0,.22); }
+    summary{
+      list-style:none;
+      cursor:pointer;
+      user-select:none;
+      padding:14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    summary::-webkit-details-marker{display:none}
+    .sum-left{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+      font-weight:1000;
+      letter-spacing:.2px;
+    }
+    .chev{
+      width:34px; height:34px; border-radius:12px;
+      display:grid; place-items:center;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.82);
+      font-family: var(--mono);
+    }
+    details[open] .chev{ background: rgba(79,209,255,.10); border-color: rgba(79,209,255,.22); }
+    .collapse-body{ padding:0 16px 16px; }
+    .collapse-body p{ margin:0; color: var(--muted); font-size:13.5px; }
+    .collapse-body .diagram, .collapse-body .spec, .collapse-body .list{ margin-top:12px; }
+
+    /* Tiny “board” mock */
+    .board{
+      margin-top:12px;
+      border-radius: var(--radius2);
+      border:1px solid rgba(255,255,255,.10);
+      background:
+        radial-gradient(700px 420px at 20% 20%, rgba(79,209,255,.10), transparent 55%),
+        radial-gradient(700px 420px at 85% 25%, rgba(167,139,250,.10), transparent 55%),
+        radial-gradient(700px 420px at 50% 90%, rgba(52,211,153,.08), transparent 55%),
+        rgba(0,0,0,.22);
+      overflow:hidden;
+      position:relative;
+      padding:14px;
+      min-height: 240px;
+    }
+    .gridlines{
+      position:absolute; inset:0;
+      background:
+        linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity:.35;
+      pointer-events:none;
+    }
+    .node{
+      position:absolute;
+      transform: translate(-50%,-50%);
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.40);
+      font-weight:900;
+      font-size:12px;
+      display:flex; align-items:center; gap:8px;
+      white-space:nowrap;
+      box-shadow: 0 14px 50px rgba(0,0,0,.45);
+    }
+    .dot{
+      width:10px; height:10px; border-radius:999px;
+      background: var(--cyan);
+      box-shadow: 0 0 20px rgba(79,209,255,.55);
+    }
+    .dot.v{ background: var(--violet); box-shadow: 0 0 20px rgba(167,139,250,.55); }
+    .dot.m{ background: var(--mint); box-shadow: 0 0 20px rgba(52,211,153,.52); }
+    .dot.r{ background: var(--rose); box-shadow: 0 0 20px rgba(251,113,133,.55); }
+    .node small{
+      font-family:var(--mono);
+      color: rgba(255,255,255,.62);
+      font-weight:900;
+      letter-spacing:.4px;
+    }
+    .tower{
+      position:absolute;
+      width:18px;
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(79,209,255,.55), rgba(0,0,0,0));
+      border:1px solid rgba(79,209,255,.22);
+      box-shadow: 0 18px 60px rgba(0,0,0,.45);
+      transform: translate(-50%,-100%);
+      opacity:.9;
+    }
+    .tower.v{ background: linear-gradient(180deg, rgba(167,139,250,.55), rgba(0,0,0,0)); border-color: rgba(167,139,250,.22); }
+    .tower.m{ background: linear-gradient(180deg, rgba(52,211,153,.50), rgba(0,0,0,0)); border-color: rgba(52,211,153,.20); }
+    .tower.r{ background: linear-gradient(180deg, rgba(251,113,133,.50), rgba(0,0,0,0)); border-color: rgba(251,113,133,.22); }
+
+    footer{
+      margin-top:28px;
+      color: rgba(255,255,255,.50);
+      font-size:12px;
+      border-top:1px solid rgba(255,255,255,.10);
+      padding-top:14px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">
+        <span class="spark" aria-hidden="true"></span>
+        <span>Atlas Plane v1</span>
+      </div>
+      <div class="nav">
+        <a href="#overview">Overview</a>
+        <a href="#founding">Found the plane</a>
+        <a href="#points">Points</a>
+        <a href="#heat">Heat</a>
+        <a href="#stalagmites">Stalagmites</a>
+        <a href="#pitch">Pitch note</a>
+      </div>
+    </div>
+
+    <!-- HERO -->
+    <div class="hero" id="overview">
+      <div class="card pad-xl">
+        <div class="kicker"><span class="kdot"></span>Atlas Plane v1 — a board where meaning piles up</div>
+
+        <h1>
+          Found a <span class="term t-violet">Plane</span> on one or more
+          <span class="term t-rose">Images</span> and
+          <span class="term t-cyan">Tags</span>…
+          then watch the archive grow <span class="term t-mint">stalagmites</span>.
+        </h1>
+
+        <p class="lead">
+          Atlas Plane v1 is the “board version” of Atlas. You place meaning points on a plane: some are singletons
+          (one image, one tag, one tag-cluster), and some are composites (multiple images + tags + clusters bundled into one point).
+          Each point has <b>heat</b>. Heat is gravity. The archive aggregates underneath, building towers where the pull is strongest.
+        </p>
+
+        <div class="cta-row">
+          <a class="btn primary" href="#founding">How the plane is founded</a>
+          <a class="btn" href="#points">What a point can be</a>
+          <a class="btn" href="#stalagmites">Why stalagmites happen</a>
+        </div>
+
+        <div class="diagram" style="margin-top:14px" aria-label="Atlas Plane v1 mental model">
+          Plane: a 2D field of <span class="k">points</span>
+          <br/>
+          Points: <span class="r">images</span> + <span class="k">tags</span> + <span class="v">tag clusters</span> (single or composite)
+          <br/>
+          <span class="a">Heat</span> multiplies influence
+          <br/>
+          → archive images aggregate under points, forming <span class="m">stalagmites</span> (vertical piles)
+        </div>
+      </div>
+
+      <div class="card pad">
+        <div class="stack">
+          <div class="mini">
+            <h3>Focal founding</h3>
+            <p>
+              The plane can “spawn” from a single seed point (one image or one tag) and the archive arranges outward and downward from it.
+            </p>
+          </div>
+          <div class="mini">
+            <h3>Composite points</h3>
+            <p>
+              Points can represent bundles: image+image+tag-cluster, or any mix. One handle, one heat slider, big effect.
+            </p>
+          </div>
+          <div class="mini">
+            <h3>Stalagmites</h3>
+            <p>
+              Instead of folders, the archive piles up. Where influence is strong, the tower gets tall.
+            </p>
+          </div>
+          <div class="mini">
+            <h3>Move points</h3>
+            <p>
+              Drag a point across the board and the aggregate reshapes. Rearrangement is the product, not a side effect.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOUNDING -->
+    <section id="founding">
+      <div class="card pad">
+        <div class="subhead">1. Founding the plane</div>
+        <h2>The board can be born from a single seed</h2>
+        <p class="lead">
+          If you add nothing else, a single founding point can define the plane. The archive arranges outward (across the field)
+          and downward (into height) from that focal origin.
+        </p>
+
+        <div class="tiles">
+          <div class="tile">
+            <div class="badge b5">Seed</div>
+            <h3><span class="term t-rose">Single Image</span> founding</h3>
+            <p>
+              Pick one image as the “origin.” Similar images cluster nearby; dissimilar ones drift outward or form their own towers.
+            </p>
+          </div>
+          <div class="tile">
+            <div class="badge b1">Seed</div>
+            <h3><span class="term t-cyan">Single Tag</span> founding</h3>
+            <p>
+              Start from one concept. The plane forms as a gradient of that meaning, with piles where subthemes become dense.
+            </p>
+          </div>
+          <div class="tile">
+            <div class="badge b2">Seed</div>
+            <h3><span class="term t-violet">Multi-seed</span> founding</h3>
+            <p>
+              Found the plane on multiple inputs (images/tags/clusters). The field becomes a negotiated geography between pulls.
+            </p>
+          </div>
+        </div>
+
+        <div class="list">
+          <div class="row">
+            <div class="k">Default behavior</div>
+            <div class="v">No extra points added? The archive still organizes. The plane “fills itself” from the founding seed(s).</div>
+          </div>
+          <div class="row">
+            <div class="k">Then you add anchors</div>
+            <div class="v">Add points later (spread out) to carve territories, create bridges, and force splits or merges of piles.</div>
+          </div>
+        </div>
+
+        <div class="board" aria-label="Board mock showing founding and towers">
+          <div class="gridlines" aria-hidden="true"></div>
+
+          <div class="node" style="left:22%; top:35%;">
+            <span class="dot r" aria-hidden="true"></span>
+            Seed: Image <small>heat 1.0</small>
+          </div>
+          <div class="tower" style="left:22%; top:62%; height:120px;"></div>
+
+          <div class="node" style="left:64%; top:32%;">
+            <span class="dot" aria-hidden="true"></span>
+            Tag Cluster <small>heat 0.8</small>
+          </div>
+          <div class="tower" style="left:64%; top:62%; height:86px;"></div>
+
+          <div class="node" style="left:48%; top:64%;">
+            <span class="dot v" aria-hidden="true"></span>
+            Composite: Img+Img+Tag <small>heat 1.3</small>
+          </div>
+          <div class="tower v" style="left:48%; top:92%; height:140px;"></div>
+        </div>
+
+        <div class="diagram" style="margin-top:12px" aria-label="Founding pseudocode">
+          If plane starts with seed set S:
+          <br/>
+          for each image I in archive:
+          <br/>
+          &nbsp;&nbsp;score(I, S) → initial placement on plane
+          <br/>
+          &nbsp;&nbsp;height(I) increases where local density + pull is strongest
+          <br/>
+          → result: a board with emergent piles even before you add more points
+        </div>
+      </div>
+    </section>
+
+    <!-- POINTS -->
+    <section id="points">
+      <div class="card pad">
+        <div class="subhead">2. Points</div>
+        <h2>A point can be a singleton or a composite</h2>
+        <p class="lead">
+          Plane v1’s core move: treat “a bundle of meaning” as one draggable point. A point can be one thing,
+          or a composite made of multiple images and tag structures.
+        </p>
+
+        <div class="tiles">
+          <div class="tile">
+            <div class="badge b1">Singleton</div>
+            <h3><span class="term t-cyan">Tag</span></h3>
+            <p>A single term. Clean influence. Great for carving broad territories.</p>
+          </div>
+          <div class="tile">
+            <div class="badge b5">Singleton</div>
+            <h3><span class="term t-rose">Image</span></h3>
+            <p>A single anchor image. It’s an aesthetic lighthouse: style, vibe, composition, mood.</p>
+          </div>
+          <div class="tile">
+            <div class="badge b2">Singleton</div>
+            <h3><span class="term t-violet">Tag Cluster</span></h3>
+            <p>A group of tags treated as one point. A cluster lets you say “this whole concept space” with one handle.</p>
+          </div>
+        </div>
+
+        <details>
+          <summary>
+            <div class="sum-left">
+              <span class="term t-mint">Composite Points</span>
+              <span style="color:rgba(255,255,255,.65); font-weight:900;">(the real power)</span>
+            </div>
+            <div class="chev" aria-hidden="true">v</div>
+          </summary>
+          <div class="collapse-body">
+            <p>
+              A composite point is a single draggable node made from multiple inputs. Think of it as a “mini-foundation”:
+              a blended magnet you can place anywhere, then tune with one heat slider.
+            </p>
+
+            <div class="spec">
+              <h3>Examples (still readable, not gimmicky)</h3>
+              <ul>
+                <li><b>Image + Image</b></li>
+                <li><b>Image + Image + Image</b></li>
+                <li><b>Tag Cluster + Tag Cluster + Tag Cluster</b></li>
+                <li><b>Image + Tag Cluster</b></li>
+                <li><b>Image + Image + Tag Cluster</b></li>
+                <li><b>Image + Tag Cluster + Tag + Image</b> (cleanest verbal “sales handle”)</li>
+              </ul>
+            </div>
+
+            <div class="diagram" aria-label="Composite point definition">
+              Define a point P as:
+              <br/>
+              P = { images: [i1..ik], tags: [t1..tn], tagClusters: [c1..cm] }
+              <br/>
+              Influence(P, I) = <span class="a">heat(P)</span> × blend(sim(I, images), sim(I, tags), sim(I, clusters))
+              <br/>
+              → one point, one gravity, one rearrangement handle
+            </div>
+          </div>
+        </details>
+
+        <div class="list">
+          <div class="row">
+            <div class="k">Key rule</div>
+            <div class="v">
+              A point can be one thing or any combination of things. The system treats it as one attractor with one heat slider and one position.
+            </div>
+          </div>
+          <div class="row">
+            <div class="k">Why composites matter</div>
+            <div class="v">
+              They let you say “this vibe” without forcing you to write 20 tags or find one perfect image. You just bundle meaning.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HEAT -->
+    <section id="heat">
+      <div class="card pad">
+        <div class="subhead">3. Heat</div>
+        <h2>Heat is the multiplier that reshapes the board</h2>
+        <p class="lead">
+          Heat changes how hard a point pulls. It’s the simplest control that produces dramatic reorganizations without changing the data.
+        </p>
+
+        <div class="tiles">
+          <div class="tile">
+            <div class="badge b4">Neutral</div>
+            <h3>Equal heat = honest arrangement</h3>
+            <p>
+              When heats are similar, piles form where the archive naturally clusters. It’s the most faithful “truth map.”
+            </p>
+          </div>
+          <div class="tile">
+            <div class="badge b1">Bias</div>
+            <h3>Higher heat = stronger gravity</h3>
+            <p>
+              Turn a point hot and it absorbs mass: more images aggregate under it, towers grow taller, neighbors thin out.
+            </p>
+          </div>
+          <div class="tile">
+            <div class="badge b5">Dynamics</div>
+            <h3>Heat creates “territory theft”</h3>
+            <p>
+              A hot point expands its basin. Routes and borders change. The board breathes when you adjust sliders.
+            </p>
+          </div>
+        </div>
+
+        <div class="diagram" style="margin-top:14px" aria-label="Heat explanation">
+          <span class="a">Heat</span> multiplies a point’s pull:
+          <br/>
+          low heat → subtle guidance
+          <br/>
+          high heat → dominant attractor (towers grow)
+          <br/><br/>
+          Move a point + change heat = you can reshape the entire map without re-tagging the archive.
+        </div>
+      </div>
+    </section>
+
+    <!-- STALAGMITES -->
+    <section id="stalagmites">
+      <div class="grid">
+        <div class="card pad span6">
+          <div class="subhead">4. Aggregation</div>
+          <h2>Why “stalagmites” are the right metaphor</h2>
+          <p class="lead">
+            On the Plane, images don’t just sit near points. They <b>pile</b>. The pile is the visual summary of density:
+            the more images the point captures, the taller the tower.
+          </p>
+
+          <div class="list">
+            <div class="row">
+              <div class="k">Horizontal</div>
+              <div class="v">Where it belongs (placement on the plane): proximity to meaning points and composite anchors.</div>
+            </div>
+            <div class="row">
+              <div class="k">Vertical</div>
+              <div class="v">How much belongs there (height): density of captured images under that pull signature.</div>
+            </div>
+            <div class="row">
+              <div class="k">Emergence</div>
+              <div class="v">Towers form “cities” and “ridges.” Bridges appear where pulls overlap.</div>
+            </div>
+          </div>
+
+          <div class="diagram" style="margin-top:14px" aria-label="Stalagmite diagram">
+            Plane coordinate (x,y) says: nearest meaning neighborhood
+            <br/>
+            Tower height (z) says: how many images “agree” with that neighborhood
+            <br/>
+            → browsing becomes: walk the field, climb the towers
+          </div>
+        </div>
+
+        <div class="card pad span6">
+          <div class="subhead">What you do</div>
+          <h2>Exploration feels like moving through terrain</h2>
+          <p class="lead">
+            You click a tower to open a local gallery. You drag points to change borders. You heat a point to make the world care more about it.
+            It’s geography for meaning.
+          </p>
+
+          <div class="spec">
+            <h3>Minimal v1 controls</h3>
+            <ul>
+              <li><b>Found the plane:</b> start with one or multiple seed points.</li>
+              <li><b>Add points:</b> singleton or composite meaning points.</li>
+              <li><b>Move points:</b> drag across the plane to reshape regions.</li>
+              <li><b>Heat slider:</b> change tower growth and territorial pull.</li>
+              <li><b>Click-to-browse:</b> open the images “inside” a local tower.</li>
+            </ul>
+          </div>
+
+          <details>
+            <summary>
+              <div class="sum-left">
+                <span class="term t-amber">Explainability</span>
+                <span style="color:rgba(255,255,255,.65); font-weight:900;">(why is this image here?)</span>
+              </div>
+              <div class="chev" aria-hidden="true">v</div>
+            </summary>
+            <div class="collapse-body">
+              <p>
+                Every image can expose a “pull signature”: which points attracted it, and how heat weighted the decision.
+                That makes the terrain trustworthy instead of magical.
+              </p>
+              <div class="diagram" aria-label="Explainability snippet">
+                Image I:
+                <br/>
+                Top pulls:
+                <br/>
+                1) P₄ (Composite: Img+TagCluster) → 0.82 (heat 1.2)
+                <br/>
+                2) P₁ (Tag: “noir”) → 0.58 (heat 0.9)
+                <br/>
+                3) P₂ (Image anchor) → 0.41 (heat 0.8)
+                <br/>
+                → placed near P₄, contributes to that tower
+              </div>
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- PITCH NOTE -->
+    <section id="pitch">
+      <div class="card pad">
+        <div class="subhead">5. Pitch note</div>
+        <h2>Why the explanation stays restrained</h2>
+
+        <div class="diagram" aria-label="Pitch note text">
+          Note: I didn’t want to make this look gimmicky just to sell the concept, so I kept the system described here at a clean cutoff.
+          The real scope of my vision easily expands to “as much as you want” combinations, complexity be damned.
+          But for explaining the idea clearly, I found the simplest verbal handle is a composite point like Image + Tag Cluster + Tag + Image.
+          It communicates the core mechanic without drowning the reader in permutations.
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;">
+        <div>
+          <b>Atlas Plane v1</b> — Composite Points → Heat → Stalagmite Aggregation.
+          <span style="color:rgba(255,255,255,.32)">|</span>
+          <span style="color:rgba(255,255,255,.60)">A board where meaning piles up.</span>
+        </div>
+        <div style="font-family:var(--mono); color:rgba(255,255,255,.45)">
+          Seeds • Points • Composites • Heat • Towers • Browse
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // Rotate the little "v" indicator for <details>
+    // (Purely cosmetic; keeps your pages feeling "alive" without being gimmicky.)
+    document.querySelectorAll('details').forEach(d => {
+      const chev = d.querySelector('.chev');
+      const sync = () => { chev.textContent = d.open ? '^' : 'v'; };
+      d.addEventListener('toggle', sync);
+      sync();
+    });
+  </script>
+</body>
+</html>
