@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Atlas — The World Engine</title>
-  <meta name="description" content="Atlas hub: collapse-open the Sphere and Character systems, embedded directly from globe.html and lore.html." />
+  <meta name="description" content="Atlas hub: collapse-open Plane, Sphere, and Characters, embedded directly from plane.html, globe.html, and lore.html." />
 
   <style>
     :root{
@@ -143,6 +143,8 @@
     .t-violet{ color: rgba(167,139,250,.96); border-color: rgba(167,139,250,.25); background: rgba(167,139,250,.08); }
     .t-mint{ color: rgba(52,211,153,.96); border-color: rgba(52,211,153,.25); background: rgba(52,211,153,.08); }
     .t-hot{ color: rgba(255,61,242,.96); border-color: rgba(255,61,242,.30); background: rgba(255,61,242,.10); box-shadow: 0 0 0 6px rgba(255,61,242,.06); }
+    .t-amber{ color: rgba(251,191,36,.95); border-color: rgba(251,191,36,.25); background: rgba(251,191,36,.08); }
+    .t-rose{ color: rgba(251,113,133,.95); border-color: rgba(251,113,133,.25); background: rgba(251,113,133,.08); }
 
     /* Collapsible modules */
     .modules{margin-top:18px; display:grid; gap:14px}
@@ -178,6 +180,7 @@
       white-space:nowrap;
       margin-top:2px;
     }
+    .p0{border-color: rgba(52,211,153,.25); background: rgba(52,211,153,.07)}
     .p1{border-color: rgba(79,209,255,.25); background: rgba(79,209,255,.07)}
     .p2{border-color: rgba(255,61,242,.25); background: rgba(255,61,242,.07)}
 
@@ -199,7 +202,7 @@
       flex-direction:column;
       gap:8px;
       align-items:flex-end;
-      min-width: 160px;
+      min-width: 180px;
       padding-left:10px;
     }
     .links{
@@ -254,7 +257,7 @@
     iframe{
       width:100%;
       border:0;
-      height: 78vh; /* big enough to read without feeling cramped */
+      height: 78vh;
       display:block;
       background: transparent;
     }
@@ -284,6 +287,7 @@
         <span>Atlas</span>
       </div>
       <div class="nav">
+        <a href="#plane">Plane</a>
         <a href="#globe">Sphere</a>
         <a href="#lore">Characters</a>
       </div>
@@ -292,17 +296,47 @@
     <div class="card pad-xl">
       <div class="kicker"><span class="kdot"></span>Atlas Hub — the World Engine</div>
       <h1>
-        A <span class="term t-violet">Sphere of Meaning</span> that becomes
-        <span class="term t-mint">Worlds</span> and
-        <span class="term t-hot">People</span>.
+        A <span class="term t-violet">Plane</span> and a <span class="term t-violet">Sphere</span> of meaning,
+        becoming <span class="term t-mint">Worlds</span> and <span class="term t-hot">People</span>.
       </h1>
       <p class="lead">
-        This is the unified front door. The two core systems live below as expandable modules.
-        Each module is also its own standalone page, so you can share the deep link without dragging the whole universe behind it.
+        Unified front door. Expand modules to read them inside the hub, or open their standalone pages for clean deep links.
       </p>
     </div>
 
     <div class="modules">
+
+      <!-- MODULE 0: PLANE -->
+      <details class="module" id="plane" data-src="https://regalfyre.github.io/Atlas-Worlds/plane.html">
+        <summary>
+          <div class="sum-left">
+            <div class="pill p0">Atlas Plane v1</div>
+            <div>
+              <div class="sum-title">Composite Points, Heat, Stalagmite Aggregation</div>
+              <p class="sum-desc">
+                Found a plane on one or more <span class="term t-rose">Images</span> and <span class="term t-cyan">Tags</span>,
+                then place composite points (image+image+tag-cluster), tune <span class="term t-amber">Heat</span>,
+                and watch towers grow where meaning piles up.
+              </p>
+            </div>
+          </div>
+
+          <div class="sum-right">
+            <div class="links">
+              <a class="btn primary" href="https://regalfyre.github.io/Atlas-Worlds/plane.html" target="_blank" rel="noopener">Open page</a>
+              <a class="btn" href="#plane">Link</a>
+            </div>
+            <div class="chev">⌄</div>
+          </div>
+        </summary>
+
+        <div class="module-body">
+          <div class="framewrap">
+            <!-- iframe injected lazily -->
+          </div>
+          <div class="note">Tip: open this section via index.html#plane</div>
+        </div>
+      </details>
 
       <!-- MODULE 1: GLOBE -->
       <details class="module" id="globe" data-src="https://regalfyre.github.io/Atlas-Worlds/globe.html">
@@ -313,7 +347,7 @@
               <div class="sum-title">Surface Tags, Anchor Images, Interior Settling</div>
               <p class="sum-desc">
                 Place <span class="term t-cyan">Tag Nodes</span> and <span class="term t-violet">Anchor Nodes</span> on the sphere,
-                tune <span class="term">Heat</span>, and let the archive settle into navigable coordinates.
+                tune <span class="term t-amber">Heat</span>, and let the archive settle into navigable coordinates.
               </p>
             </div>
           </div>
@@ -372,19 +406,19 @@
     <footer>
       <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;">
         <div>
-          <b>Atlas</b> — Hub for Sphere + Characters
+          <b>Atlas</b> — Hub for Plane + Sphere + Characters
           <span style="color:rgba(255,255,255,.32)">|</span>
           <span style="color:rgba(255,255,255,.60)">Cartographers of Meaning.</span>
         </div>
         <div style="font-family:var(--mono); color:rgba(255,255,255,.45)">
-          globe.html • lore.html • embedded modules • deep links
+          plane.html • globe.html • lore.html • embedded modules • deep links
         </div>
       </div>
     </footer>
   </div>
 
   <script>
-    // Lazy-inject iframes only when a module is opened (faster load, less chaos).
+    // Lazy-inject iframes only when a module is opened (faster load).
     function ensureIframe(detailsEl){
       const wrap = detailsEl.querySelector(".framewrap");
       if(!wrap) return;
@@ -398,7 +432,7 @@
       wrap.appendChild(iframe);
     }
 
-    // Open by hash (#globe or #lore), load iframe, and scroll it into view.
+    // Open by hash (#plane, #globe, #lore), load iframe, and scroll into view.
     function openFromHash(){
       const hash = (location.hash || "").replace("#","");
       if(!hash) return;
