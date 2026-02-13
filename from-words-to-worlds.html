@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>From Words to Worlds!!</title>
+  <meta name="description" content="From Words to Worlds!! — A Semantic Reality Engine that compiles language into traversable Unity worlds with memory, door-zone depth, and commemorative image artifacts." />
+  <style>
+    :root{
+      --bg0:#05060a;
+      --bg1:#0b0c10;
+      --panel:rgba(255,255,255,.06);
+      --panel2:rgba(255,255,255,.04);
+      --border:rgba(255,255,255,.12);
+      --text:rgba(255,255,255,.92);
+      --muted:rgba(255,255,255,.68);
+      --accent:#8be9fd;
+      --accent2:#bd93f9;
+      --warn:#ffb86c;
+      --good:#50fa7b;
+      --bad:#ff5555;
+      --shadow: rgba(0,0,0,.35);
+      --radius: 18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color:var(--text);
+      background:
+        radial-gradient(1100px 640px at 18% -10%, rgba(139,233,253,.18), transparent 55%),
+        radial-gradient(1100px 640px at 85% 5%, rgba(189,147,249,.14), transparent 55%),
+        linear-gradient(180deg, var(--bg0) 0%, var(--bg1) 36%, #07080c 100%);
+      line-height:1.6;
+    }
+    a{color:var(--accent); text-decoration:none}
+    a:hover{text-decoration:underline}
+    .wrap{max-width:1080px;margin:0 auto;padding:42px 18px 76px}
+    header{
+      border:1px solid var(--border);
+      background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
+      border-radius:24px;
+      padding:26px 24px 20px;
+      box-shadow: 0 14px 40px var(--shadow);
+      position:relative;
+      overflow:hidden;
+    }
+    header:before{
+      content:"";
+      position:absolute; inset:-2px;
+      background:
+        radial-gradient(700px 200px at 20% 0%, rgba(139,233,253,.18), transparent 60%),
+        radial-gradient(700px 200px at 85% 10%, rgba(189,147,249,.14), transparent 60%);
+      filter: blur(0px);
+      pointer-events:none;
+    }
+    header > *{position:relative}
+    .kicker{
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      color:var(--muted);
+      font-size:12px;
+      margin:0 0 10px;
+    }
+    h1{
+      margin:0 0 10px;
+      font-size:46px;
+      line-height:1.05;
+      letter-spacing:-.02em;
+    }
+    .sub{
+      margin:0;
+      max-width:86ch;
+      color:rgba(255,255,255,.78);
+      font-size:16px;
+    }
+    .pills{
+      display:flex; flex-wrap:wrap; gap:8px;
+      margin-top:14px;
+    }
+    .pill{
+      font-size:12px;
+      color:rgba(255,255,255,.86);
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.04);
+      backdrop-filter: blur(6px);
+    }
+
+    nav{
+      margin-top:18px;
+      display:flex; flex-wrap:wrap; gap:10px;
+    }
+    nav a{
+      font-size:13px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.03);
+      color:rgba(255,255,255,.86);
+    }
+    nav a:hover{border-color:rgba(139,233,253,.35)}
+    section{margin-top:26px}
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:14px;
+    }
+    @media (min-width: 900px){
+      .grid{grid-template-columns: 1fr 1fr}
+    }
+    .card{
+      border:1px solid var(--border);
+      background:var(--panel);
+      border-radius:var(--radius);
+      padding:18px 18px 16px;
+      box-shadow: 0 10px 26px rgba(0,0,0,.18);
+    }
+    .card.soft{background:var(--panel2)}
+    h2{
+      margin:0 0 12px;
+      font-size:24px;
+      letter-spacing:-.01em;
+    }
+    h3{
+      margin:0 0 10px;
+      font-size:16px;
+      color:rgba(255,255,255,.92);
+    }
+    p{margin:10px 0;color:rgba(255,255,255,.88)}
+    ul{margin:8px 0 0 20px;color:rgba(255,255,255,.88)}
+    li{margin:6px 0}
+    .callout{
+      margin-top:12px;
+      border-left:3px solid var(--accent);
+      background: rgba(139,233,253,.08);
+      border-radius:14px;
+      padding:12px 14px;
+      color:rgba(255,255,255,.9);
+    }
+    .callout.warn{border-left-color:var(--warn); background: rgba(255,184,108,.08)}
+    .callout.good{border-left-color:var(--good); background: rgba(80,250,123,.08)}
+    .callout.bad{border-left-color:var(--bad); background: rgba(255,85,85,.07)}
+    .metric{
+      display:flex; align-items:center; gap:10px;
+      padding:10px 12px;
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:14px;
+      background: rgba(0,0,0,.25);
+      margin-top:10px;
+      color:rgba(255,255,255,.86);
+      font-size:13px;
+    }
+    .dot{
+      width:10px; height:10px; border-radius:50%;
+      background:var(--accent);
+      box-shadow: 0 0 0 4px rgba(139,233,253,.16);
+      flex:0 0 auto;
+    }
+    .dot.purple{background:var(--accent2); box-shadow: 0 0 0 4px rgba(189,147,249,.14)}
+    .code{
+      margin-top:12px;
+      padding:14px 14px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.40);
+      color:rgba(255,255,255,.90);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      font-size:12px;
+      white-space:pre;
+      overflow:auto;
+    }
+    .hr{
+      margin:28px 0 0;
+      height:1px;
+      background: rgba(255,255,255,.10);
+    }
+    footer{
+      margin-top:34px;
+      text-align:center;
+      color:var(--muted);
+      font-size:12px;
+    }
+    .badge{
+      display:inline-block;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.04);
+      font-size:12px;
+      color:rgba(255,255,255,.84);
+      margin-left:8px;
+      vertical-align:middle;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <p class="kicker">Semantic-Games v1 • Unity-first</p>
+      <h1>From Words to <span style="color:var(--accent)">Worlds!!</span></h1>
+      <p class="sub">
+        A Semantic Reality Engine that compiles language into traversable Unity worlds:
+        movement, threat, sanctuary, memory, and commemorative images that prove it happened.
+        Not a chatbot. Not a map generator. A meaning-driven world compiler.
+      </p>
+
+      <div class="pills" aria-label="Key promises">
+        <span class="pill">Data-driven world spec (JSON)</span>
+        <span class="pill">Unity traversal ASAP</span>
+        <span class="pill">Door-Zone depth</span>
+        <span class="pill">Auto image caption → semantic tags</span>
+        <span class="pill">Milestone → commemorative images</span>
+        <span class="pill">Elastic memory (compact, not deleted)</span>
+      </div>
+
+      <nav aria-label="Document navigation">
+        <a href="#premise">Premise</a>
+        <a href="#problem">Problem</a>
+        <a href="#innovation">Core Innovation</a>
+        <a href="#pipeline">Pipeline</a>
+        <a href="#doorzones">Behind-the-Door Zones</a>
+        <a href="#memory">Memory & Artifacts</a>
+        <a href="#why">Why It Wins</a>
+        <a href="#v1">v1 Prototype</a>
+      </nav>
+    </header>
+
+    <section id="premise">
+      <h2>Premise</h2>
+      <div class="card">
+        <p>
+          The industry has chased graphics for decades. We are chasing something more fundamental:
+          <strong>meaning under pressure</strong>.
+        </p>
+        <p>
+          We propose a new category: persistent semantic worlds that don’t just look like places,
+          but <em>behave</em> like places with consequence, memory, and identity.
+        </p>
+        <div class="callout good">
+          <strong>Thesis:</strong> Text becomes ontology. Ontology becomes structure. Structure becomes space.
+          Space produces interaction. Interaction becomes memory. Memory becomes continuity.
+        </div>
+      </div>
+    </section>
+
+    <section id="problem">
+      <h2>The Problem</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>AI talks, but it doesn’t inhabit space</h3>
+          <p>
+            Chat systems can roleplay endlessly, but the experience is flat. There is no geography,
+            no distance, no risk, no traversal, no pressure. The world doesn’t push back.
+          </p>
+          <div class="metric"><span class="dot"></span><strong>Missing:</strong> embodied consequence</div>
+        </div>
+        <div class="card">
+          <h3>Games simulate space, but they don’t understand meaning</h3>
+          <p>
+            Most worlds are scripted or procedurally noisy. NPC dialogue rarely affects the world,
+            and “memories” rarely become durable, recallable, emotionally anchored artifacts.
+          </p>
+          <div class="metric"><span class="dot purple"></span><strong>Missing:</strong> semantic continuity</div>
+        </div>
+      </div>
+      <div class="card soft">
+        <p>
+          The gap is clear: one side has language without space, the other has space without meaning.
+          <strong>From Words to Worlds</strong> is the bridge.
+        </p>
+      </div>
+    </section>
+
+    <section id="innovation">
+      <h2>Core Innovation</h2>
+      <div class="card">
+        <p>
+          This is not “procedural generation.” It is <strong>meaning-first world synthesis</strong>.
+          The LLM does not output a story as a wall of text. It outputs a <strong>World Specification</strong>:
+          structured, constrained, and engine-compilable.
+        </p>
+        <div class="callout">
+          <strong>Key separation:</strong> Unity governs physics and movement. The LLM governs meaning, dialogue,
+          continuity, and the semantic glue that makes it feel alive.
+        </div>
+      </div>
+    </section>
+
+    <section id="pipeline">
+      <h2>The Pipeline (Beginning to End)</h2>
+
+      <div class="grid">
+        <div class="card">
+          <h3>Stage 1: Curated Genesis <span class="badge">Creator-controlled</span></h3>
+          <p>
+            We can generate the initial character images and starting lore canon ourselves.
+            The goal is cohesion and identity from day one.
+          </p>
+          <ul>
+            <li><strong>Character images</strong> (canonical look, consistent style)</li>
+            <li><strong>Initial lore</strong> (up to ~2 pages per character)</li>
+            <li>Motivations, relationships, tensions, triggers</li>
+            <li>Signature items and social roles</li>
+          </ul>
+          <div class="callout good">
+            Strong canon prevents “generic NPC drift.” The LLM extends authored DNA instead of inventing chaos.
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Stage 2: Automatic Meaning Extraction <span class="badge">Vision layer</span></h3>
+          <p>
+            If an uploaded image lacks a text pairing, the system creates one automatically.
+            Every visual asset becomes semantically active world fuel.
+          </p>
+          <ul>
+            <li>Vision model generates caption + tags + emotional tone</li>
+            <li>Produces a structured summary suitable for world-building</li>
+            <li>Feeds the LLM as authoritative “what this asset means” input</li>
+          </ul>
+          <div class="code">Input Image
+  → Vision Caption / Tags
+    → Structured Summary (objects, tone, implications)
+      → LLM World-Building Input</div>
+          <div class="callout">
+            <strong>Guarantee:</strong> nothing visual is inert. Everything has meaning, even if the user provides no text.
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Stage 3: Structured World Generation <span class="badge">LLM</span></h3>
+          <p>
+            The LLM composes a coherent world spec: locations, links, placements, threats, behaviors, and hooks.
+            It fills meaning into a constrained skeleton, not a freeform hallucination.
+          </p>
+          <ul>
+            <li>Locations tagged SAFE / DANGER / INSTITUTION / TRANSIT</li>
+            <li>Traversal links (door, street, trail)</li>
+            <li>Item placement + affordances</li>
+            <li>Character placement + roles + dialogue style</li>
+            <li>Threat vectors and pressure zones</li>
+          </ul>
+          <div class="callout warn">
+            <strong>Anti-clustering rule set:</strong> Characters are spread throughout the map with
+            <strong>0–2 per location</strong> (pairs max). Several locations begin empty to encourage exploration.
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Stage 4: Unity Compilation <span class="badge">Engine</span></h3>
+          <p>
+            Unity reads the JSON world spec and instantiates the world using templates and prefabs.
+            v1 can be primitive: box rooms, capsule NPCs, cube items. Traversal is the proof.
+          </p>
+          <ul>
+            <li>Locations → room/zone templates</li>
+            <li>Links → trigger volumes (doors/exits)</li>
+            <li>Characters → NPC prefabs (NavMesh agents)</li>
+            <li>Items → interactable props</li>
+          </ul>
+          <div class="callout good">
+            <strong>Outcome:</strong> a playable world you can walk immediately, even with zero custom art.
+          </div>
+        </div>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="card">
+        <h3>The Experience Loop</h3>
+        <p>
+          The world runs on two forces: <strong>Exposure</strong> (open space) and <strong>Shelter</strong> (door zones).
+          That tension generates urgency and attachment.
+        </p>
+        <div class="code">Open Space (Exposure)
+  → Threat / Chase / Health Pressure
+    → Retreat / Hide / Regroup
+      → Door Zone (Shelter)
+        → Deep Interaction + Milestones
+          → Memory + Artifact
+            → Back to Exposure (with continuity)</div>
+      </div>
+    </section>
+
+    <section id="doorzones">
+      <h2>Behind-the-Door Zones (The Heart)</h2>
+      <div class="card">
+        <p>
+          Door Zones are not “interiors.” They are <strong>semantic state changes</strong>.
+          Crossing the threshold changes how the world behaves and how meaning is generated.
+        </p>
+
+        <div class="grid">
+          <div class="card soft">
+            <h3>What changes at the threshold</h3>
+            <ul>
+              <li><strong>Threat pressure drops</strong> (danger does not follow inside)</li>
+              <li><strong>Dialogue budget expands</strong> (depth replaces reactivity)</li>
+              <li><strong>Lore recall increases</strong> (key memories become active context)</li>
+              <li><strong>Milestone logging activates</strong> (meaning becomes durable)</li>
+              <li><strong>Action set expands</strong> (talk deep, ritual, vow, comfort, plan)</li>
+            </ul>
+          </div>
+          <div class="card soft">
+            <h3>Why Door Zones matter</h3>
+            <ul>
+              <li>Open space creates urgency, but not attachment.</li>
+              <li>Door Zones create <strong>relief</strong>, and relief enables bonding.</li>
+              <li>Bonding creates memories that change future dialogue and behavior.</li>
+              <li>Door Zones are where the world grows roots instead of noise.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout">
+          <strong>Door Zones are memory forges:</strong> They turn lived moments into structured milestones the world can reference.
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <h3>Door Zone Types</h3>
+          <ul>
+            <li><strong>Safe Shelter</strong>: hideouts, homes, back rooms (heal, comfort, bond)</li>
+            <li><strong>Institutional Zones</strong>: courts, offices, ceremonies (formal consequences)</li>
+            <li><strong>Intimate Zones</strong>: private spaces (confession, vulnerability, relational depth)</li>
+          </ul>
+          <div class="callout warn">
+            Institutions aren’t set dressing. They are semantic state-change environments that formalize decisions.
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Open Space vs Door Zone Mode</h3>
+          <div class="code">Open Space Mode:
+  - movement priority
+  - threat detection high
+  - dialogue short/reactive
+  - low lore recall
+  - few verbs (run, hide, inspect)
+
+Door Zone Mode:
+  - movement minimal
+  - threat disabled/reduced
+  - dialogue deep
+  - lore recall active
+  - milestones enabled
+  - expanded verbs (vow, ritual, comfort, plan)</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="memory">
+      <h2>Memory & Commemorative Artifacts</h2>
+
+      <div class="grid">
+        <div class="card">
+          <h3>Milestones become structured memory</h3>
+          <p>
+            When something meaningful happens in a Door Zone, it is recorded as a structured event.
+            This is how the world earns continuity without exploding into infinite token storage.
+          </p>
+          <div class="code">{
+  "event_type": "MILESTONE",
+  "participants": ["player", "ch_4"],
+  "location": "loc_back_room",
+  "emotional_tags": ["trust", "relief", "bonding"],
+  "impact_score": 8,
+  "summary": "She said it was the best day of her life."
+}</div>
+          <div class="callout good">
+            <strong>Key:</strong> We don’t delete memories. We compact them. The world stays coherent without becoming expensive chaos.
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Door Zones generate commemorative images</h3>
+          <p>
+            The Door Zone is also a <strong>memory studio</strong>. When a milestone forms, the system can render it:
+            your character plus the other character(s), in the scene you just lived.
+          </p>
+          <ul>
+            <li>Milestone → image prompt (tone + environment + actions)</li>
+            <li>Character consistency from canonical images</li>
+            <li>Generated image saved as a <strong>lore artifact</strong></li>
+            <li>Paired with a concise caption for future recall</li>
+          </ul>
+          <div class="code">Milestone (structured)
+  → Image Prompt (scene + emotion)
+    → Generated Commemorative Image
+      → Caption/Text Pairing
+        → Stored as Lore Artifact</div>
+          <div class="callout">
+            The memory becomes <strong>visual proof</strong>. Later dialogue gains weight because the artifact exists.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Elastic Memory (Compaction, Not Hostage)</h3>
+        <p>
+          Continuity is preserved through a fair memory architecture:
+          detailed recent events and user-selected “key memories” stay vivid,
+          while everything else is compacted into summaries that remain expandable.
+        </p>
+        <ul>
+          <li><strong>Recent events:</strong> stored in richer detail</li>
+          <li><strong>User-selected Top Memories:</strong> always available in depth</li>
+          <li><strong>Everything else:</strong> compact summaries + tags</li>
+          <li><strong>No deletion:</strong> memory returns when the context budget returns</li>
+        </ul>
+        <div class="callout warn">
+          The promise is preservation. The mechanism is compaction. The result is coherence without runaway cost.
+        </div>
+      </div>
+    </section>
+
+    <section id="why">
+      <h2>Why This Wins</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>It creates attachment, not just interaction</h3>
+          <p>
+            Open-world pressure creates urgency. Door-zone depth creates bonding. Bonding creates memory.
+            Memory creates identity. Identity creates retention.
+          </p>
+          <div class="metric"><span class="dot"></span><strong>Outcome:</strong> lived continuity</div>
+        </div>
+        <div class="card">
+          <h3>It scales from primitives to premium</h3>
+          <p>
+            v1 proves the loop with boxes and capsules. Once the loop is true, higher fidelity is an upgrade,
+            not a dependency.
+          </p>
+          <div class="metric"><span class="dot purple"></span><strong>Outcome:</strong> fast iteration</div>
+        </div>
+        <div class="card">
+          <h3>It turns content into worlds automatically</h3>
+          <p>
+            Upload characters and assets. The engine synthesizes a coherent world spec. Unity compiles it into space.
+            Images without text still become meaningful via automatic captioning.
+          </p>
+          <div class="metric"><span class="dot"></span><strong>Outcome:</strong> creator leverage</div>
+        </div>
+        <div class="card">
+          <h3>It generates shareable, personal mythology</h3>
+          <p>
+            Door-zone milestones become commemorative images and captions. Players accumulate an archive of real moments
+            inside the world. Not screenshots. Not cutscenes. Generated memory artifacts.
+          </p>
+          <div class="metric"><span class="dot purple"></span><strong>Outcome:</strong> social gravity</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="v1">
+      <h2>Semantic-Games v1 (Working Prototype ASAP)</h2>
+      <div class="card">
+        <p>
+          v1 is intentionally minimal: a proof that the world compiles, traversal works, characters move,
+          threats pressure movement, and Door Zones produce depth and memories.
+        </p>
+        <div class="grid">
+          <div class="card soft">
+            <h3>Unity Components</h3>
+            <ul>
+              <li><strong>WorldJSONLoader</strong> (reads world spec)</li>
+              <li><strong>RoomBuilder</strong> (templates per location)</li>
+              <li><strong>LinkSpawner</strong> (door/path triggers)</li>
+              <li><strong>EntitySpawner</strong> (NPCs + items)</li>
+              <li><strong>TraversalManager</strong> (location transitions)</li>
+              <li><strong>NPCController</strong> (follow/flee/chase)</li>
+              <li><strong>DoorZoneController</strong> (mode switch)</li>
+              <li><strong>EventLogger</strong> (milestone logs)</li>
+            </ul>
+          </div>
+          <div class="card soft">
+            <h3>v1 Proof Checklist</h3>
+            <ul>
+              <li>JSON loads into a traversable world</li>
+              <li>Characters distributed (pairs max per location)</li>
+              <li>Companions follow and flee</li>
+              <li>Threat patrols, detects, chases</li>
+              <li>Door Zone triggers deep interaction mode</li>
+              <li>Milestone log writes correctly</li>
+              <li>Milestone → commemorative image + caption</li>
+              <li>Lore updates reference milestones later</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout good">
+          <strong>v1 goal:</strong> prove “words → world” with the exposure/shelter loop and a memory system that the world can call back later.
+        </div>
+      </div>
+    </section>
+
+    <div class="hr"></div>
+
+    <footer>
+      <p>
+        <strong>From Words to Worlds!!</strong> — a semantic reality engine where language shapes space,
+        space enforces consequence, and memory sustains identity.
+      </p>
+      <p style="margin:6px 0 0;">
+        Built for Unity-first prototyping • Designed to scale from primitives to premium worlds
+      </p>
+    </footer>
+  </div>
+</body>
+</html>
