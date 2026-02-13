@@ -1,1 +1,673 @@
 
+```html
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Slice of Life — Worlds from People Intersections</title>
+  <meta name="description" content="Slice of Life: choose one or multiple people in the Atlas sphere, find an intersection plane, pull nearby objects, and generate a navigable world. Characters persist through layered lore, save points, and controlled resonance." />
+
+  <style>
+    :root{
+      --bg0:#070913;
+      --bg1:#0b1022;
+      --panel:rgba(255,255,255,.06);
+      --panel2:rgba(255,255,255,.035);
+      --border:rgba(255,255,255,.10);
+      --text:rgba(255,255,255,.92);
+      --muted:rgba(255,255,255,.68);
+      --muted2:rgba(255,255,255,.52);
+
+      --cyan:#4fd1ff;
+      --violet:#a78bfa;
+      --mint:#34d399;
+      --amber:#fbbf24;
+      --rose:#fb7185;
+      --hot:#ff3df2;
+
+      --shadow: 0 18px 60px rgba(0,0,0,.55);
+      --radius: 18px;
+      --radius2: 26px;
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      color:var(--text);
+      background:
+        radial-gradient(1200px 800px at 14% 0%, rgba(167,139,250,.18), transparent 60%),
+        radial-gradient(1000px 800px at 85% 10%, rgba(79,209,255,.14), transparent 62%),
+        radial-gradient(900px 700px at 40% 110%, rgba(52,211,153,.10), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      letter-spacing:.1px;
+      line-height:1.45;
+    }
+
+    a{color:var(--cyan); text-decoration:none}
+    a:hover{text-decoration:underline}
+    .wrap{max-width:1180px; margin:0 auto; padding:28px 18px 84px}
+
+    /* Top bar */
+    .top{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:14px; padding:10px 6px 18px;
+      position:sticky; top:0; z-index:20;
+      backdrop-filter: blur(10px);
+      background: linear-gradient(180deg, rgba(7,9,19,.72), rgba(7,9,19,.28));
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .brand{display:flex; align-items:center; gap:10px; font-weight:1000; letter-spacing:.2px;}
+    .spark{
+      width:14px; height:14px; border-radius:999px;
+      background: conic-gradient(from 0deg, var(--cyan), var(--violet), var(--mint), var(--cyan));
+      box-shadow: 0 0 0 5px rgba(79,209,255,.10);
+    }
+    .nav{display:flex; gap:14px; flex-wrap:wrap}
+    .nav a{
+      color:var(--muted);
+      font-weight:800;
+      font-size:13px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid transparent;
+    }
+    .nav a:hover{
+      color:var(--text);
+      border-color: rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      text-decoration:none;
+    }
+
+    /* Cards */
+    .card{
+      background: linear-gradient(180deg, var(--panel), var(--panel2));
+      border:1px solid var(--border);
+      border-radius: var(--radius2);
+      box-shadow: var(--shadow);
+    }
+    .pad{padding:18px}
+    .pad-xl{padding:26px 22px}
+
+    /* Hero */
+    .hero{
+      display:grid;
+      grid-template-columns: 1.12fr .88fr;
+      gap:16px;
+      align-items:stretch;
+      margin-top:8px;
+    }
+    @media (max-width: 940px){ .hero{grid-template-columns:1fr} }
+
+    .kicker{
+      display:inline-flex; align-items:center; gap:10px;
+      padding:7px 12px; border-radius:999px;
+      background: rgba(79,209,255,.10);
+      border:1px solid rgba(79,209,255,.22);
+      color: var(--muted);
+      font-size:13px;
+      font-weight:800;
+      width:max-content;
+    }
+    .kdot{
+      width:8px; height:8px; border-radius:999px;
+      background: var(--cyan);
+      box-shadow: 0 0 18px rgba(79,209,255,.65);
+    }
+
+    h1{
+      margin:14px 0 10px;
+      font-size:44px;
+      line-height:1.03;
+      letter-spacing:-.8px;
+    }
+    @media (max-width: 520px){ h1{font-size:34px} }
+
+    .lead{
+      color:var(--muted);
+      font-size:16px;
+      max-width: 86ch;
+      margin:0;
+    }
+
+    .term{
+      font-weight:1000;
+      letter-spacing:.1px;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      display:inline-block;
+      margin:2px 4px 2px 0;
+      white-space:nowrap;
+    }
+    .t-cyan{ color: rgba(79,209,255,.95); border-color: rgba(79,209,255,.25); background: rgba(79,209,255,.08); }
+    .t-violet{ color: rgba(167,139,250,.96); border-color: rgba(167,139,250,.25); background: rgba(167,139,250,.08); }
+    .t-mint{ color: rgba(52,211,153,.96); border-color: rgba(52,211,153,.25); background: rgba(52,211,153,.08); }
+    .t-amber{ color: rgba(251,191,36,.95); border-color: rgba(251,191,36,.25); background: rgba(251,191,36,.08); }
+    .t-rose{ color: rgba(251,113,133,.95); border-color: rgba(251,113,133,.25); background: rgba(251,113,133,.08); }
+    .t-hot{ color: rgba(255,61,242,.96); border-color: rgba(255,61,242,.30); background: rgba(255,61,242,.10); box-shadow: 0 0 0 6px rgba(255,61,242,.06); }
+
+    .cta-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:16px}
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:10px;
+      padding:10px 14px; border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      font-weight:1000;
+      font-size:13px;
+      letter-spacing:.2px;
+    }
+    .btn.primary{
+      border-color: rgba(79,209,255,.42);
+      background: rgba(79,209,255,.12);
+      box-shadow: 0 0 0 7px rgba(79,209,255,.07);
+    }
+    .btn:hover{filter:brightness(1.08); text-decoration:none}
+
+    /* Side stack */
+    .stack{display:grid; gap:12px}
+    .mini{
+      padding:14px;
+      border-radius: var(--radius);
+      background: rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.10);
+    }
+    .mini h3{
+      margin:0 0 6px;
+      font-size:13px;
+      color:var(--muted);
+      font-weight:1000;
+      letter-spacing:.35px;
+      text-transform:uppercase;
+    }
+    .mini p{margin:0; color:var(--muted2); font-size:13px}
+
+    /* Sections */
+    section{margin-top:22px}
+    h2{
+      margin:0 0 8px;
+      font-size:24px;
+      letter-spacing:-.25px;
+    }
+    .subhead{
+      font-family:var(--mono);
+      font-size:12px;
+      color: rgba(255,255,255,.58);
+      letter-spacing:.6px;
+      text-transform:uppercase;
+      margin-bottom:8px;
+    }
+
+    /* Grid helper */
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:14px;
+      margin-top:18px;
+    }
+    .span12{grid-column: span 12}
+    .span8{grid-column: span 8}
+    .span4{grid-column: span 4}
+    .span6{grid-column: span 6}
+    @media (max-width: 940px){
+      .span8,.span4,.span6{grid-column: span 12}
+    }
+
+    /* Tiles */
+    .tiles{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap:12px;
+      margin-top:14px;
+    }
+    @media (max-width: 980px){ .tiles{grid-template-columns: repeat(2, minmax(0,1fr));} }
+    @media (max-width: 560px){ .tiles{grid-template-columns: 1fr;} }
+
+    .tile{
+      padding:14px;
+      border-radius: var(--radius);
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.20);
+      position:relative;
+      overflow:hidden;
+    }
+    .tile:before{
+      content:"";
+      position:absolute; inset:-40px -40px auto auto;
+      width:160px; height:160px;
+      background: radial-gradient(circle at 30% 30%, rgba(79,209,255,.16), transparent 60%);
+      transform: rotate(18deg);
+    }
+    .tile h3{
+      margin:0 0 6px;
+      font-size:16px;
+      letter-spacing:-.15px;
+    }
+    .tile p{margin:0; color:var(--muted); font-size:13px}
+
+    .badge{
+      display:inline-flex; align-items:center; gap:8px;
+      font-size:12px; font-weight:1000;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.76);
+      margin-bottom:10px;
+      width:max-content;
+    }
+    .b1{border-color: rgba(79,209,255,.25); background: rgba(79,209,255,.07)}
+    .b2{border-color: rgba(167,139,250,.25); background: rgba(167,139,250,.07)}
+    .b3{border-color: rgba(52,211,153,.25); background: rgba(52,211,153,.07)}
+    .b4{border-color: rgba(251,191,36,.25); background: rgba(251,191,36,.07)}
+    .b5{border-color: rgba(255,61,242,.25); background: rgba(255,61,242,.07)}
+    .b6{border-color: rgba(251,113,133,.25); background: rgba(251,113,133,.07)}
+
+    /* Diagram block */
+    .diagram{
+      font-family:var(--mono);
+      font-size:12px;
+      line-height:1.6;
+      color: rgba(255,255,255,.80);
+      background: rgba(0,0,0,.34);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius: var(--radius);
+      padding:12px;
+      overflow:auto;
+    }
+    .diagram .k{color: rgba(79,209,255,.95)}
+    .diagram .v{color: rgba(167,139,250,.95)}
+    .diagram .m{color: rgba(52,211,153,.95)}
+    .diagram .a{color: rgba(251,191,36,.95)}
+    .diagram .r{color: rgba(251,113,133,.95)}
+    .diagram .h{color: rgba(255,61,242,.95)}
+
+    /* Table-ish list */
+    .list{
+      margin-top:12px;
+      border-radius: var(--radius);
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.20);
+      overflow:hidden;
+    }
+    .row{
+      display:grid;
+      grid-template-columns: 220px 1fr;
+      gap:12px;
+      padding:12px 14px;
+      border-top:1px solid rgba(255,255,255,.08);
+    }
+    .row:first-child{border-top:none}
+    @media (max-width: 720px){
+      .row{grid-template-columns:1fr}
+    }
+    .row .k{
+      font-family:var(--mono);
+      color: rgba(255,255,255,.65);
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.6px;
+    }
+    .row .v{
+      color: var(--muted);
+      font-size:13px;
+    }
+
+    /* Pull quotes */
+    .quote{
+      margin-top:12px;
+      padding:14px;
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.14);
+      background:
+        radial-gradient(900px 240px at 20% 10%, rgba(255,61,242,.14), transparent 55%),
+        radial-gradient(900px 240px at 90% 20%, rgba(79,209,255,.12), transparent 60%),
+        rgba(0,0,0,.20);
+      position:relative;
+      overflow:hidden;
+    }
+    .quote:before{
+      content:"";
+      position:absolute; inset:-60px -60px auto auto;
+      width:240px; height:240px;
+      background: radial-gradient(circle at 35% 35%, rgba(255,61,242,.20), transparent 60%);
+      transform: rotate(18deg);
+    }
+    .quote p{margin:0; color:rgba(255,255,255,.80); font-size:13.5px}
+    .quote b{color:rgba(255,255,255,.95)}
+
+    footer{
+      margin-top:28px;
+      color: rgba(255,255,255,.50);
+      font-size:12px;
+      border-top:1px solid rgba(255,255,255,.10);
+      padding-top:14px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">
+        <span class="spark" aria-hidden="true"></span>
+        <span>Slice of Life</span>
+      </div>
+      <div class="nav">
+        <a href="#overview">Overview</a>
+        <a href="#people">People Bookmarks</a>
+        <a href="#plane">World Plane</a>
+        <a href="#memory">Memory & Pruning</a>
+        <a href="#travel">World Traversal</a>
+      </div>
+    </div>
+
+    <!-- HERO -->
+    <div class="hero" id="overview">
+      <div class="card pad-xl">
+        <div class="kicker"><span class="kdot"></span>Slice of Life — worlds made from people</div>
+
+        <h1>
+          Pick <span class="term t-hot">one person</span> or
+          <span class="term t-hot">many</span> inside the sphere…
+          and let the system build a <span class="term t-mint">world</span> where they intersect.
+        </h1>
+
+        <p class="lead">
+          Slice of Life is the everyday world framework for Atlas. You choose characters you’ve saved inside the sphere,
+          and the engine finds a <span class="term t-violet">plane</span> that intersects closest to all of them.
+          Then it pulls in nearby objects and images within a selectable distance band (±5, ±10, etc.)
+          to create a navigable “slice” that feels like a real place, not a list.
+        </p>
+
+        <div class="cta-row">
+          <a class="btn primary" href="#people">Start with People Bookmarks</a>
+          <a class="btn" href="#plane">How the plane is chosen</a>
+          <a class="btn" href="#memory">Why memory feels haunted</a>
+        </div>
+
+        <div class="diagram" style="margin-top:14px" aria-label="Slice of Life mental model">
+          1) Select saved <span class="h">People Bookmarks</span>
+          <br/>
+          2) Find intersection <span class="v">Plane</span> closest to all selected people
+          <br/>
+          3) Pull nearby <span class="k">Objects</span> within ±distance (up/down)
+          <br/>
+          4) Generate a traversable world with continuity, not resets
+        </div>
+      </div>
+
+      <div class="card pad">
+        <div class="stack">
+          <div class="mini">
+            <h3>People-first browsing</h3>
+            <p>
+              You don’t “open a folder.” You open someone, then the world forms around them.
+            </p>
+          </div>
+          <div class="mini">
+            <h3>Intersection is the map</h3>
+            <p>
+              The most important places are where lives overlap, not where tags are clean.
+            </p>
+          </div>
+          <div class="mini">
+            <h3>Worlds that don’t forget you</h3>
+            <p>
+              Characters can be pruned for performance, but their history stays stored and can echo back under stress.
+            </p>
+          </div>
+          <div class="mini">
+            <h3>Continuity without exposition</h3>
+            <p>
+              They don’t say “I’m an AI.” They say: “I don’t know why this feels familiar.”
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PEOPLE BOOKMARKS -->
+    <section id="people">
+      <div class="card pad">
+        <div class="subhead">I. People Bookmarks</div>
+        <h2>Pick one person or scroll a carousel of many</h2>
+        <p class="lead">
+          Slice of Life prioritizes characters as <span class="term t-hot">People Bookmarks</span>:
+          saved identities you can browse as a list, grid, or carousel depending on the interface.
+          Select one for a personal world. Select many to force an intersection.
+        </p>
+
+        <div class="tiles">
+          <div class="tile">
+            <div class="badge b6">Selection</div>
+            <h3>Single-person world</h3>
+            <p>
+              Choose one person, then generate a slice centered near their current coordinate region.
+              The world is intimate and focused.
+            </p>
+          </div>
+          <div class="tile">
+            <div class="badge b5">Group</div>
+            <h3>Multi-person intersection</h3>
+            <p>
+              Choose multiple people and the engine tries to find a plane that intersects closest to all of them.
+              If needed, it optimizes for “closest shared plausibility.”
+            </p>
+          </div>
+          <div class="tile">
+            <div class="badge b3">Carry</div>
+            <h3>Bring someone with you</h3>
+            <p>
+              Characters can move across worlds through intersection points.
+              They remain themselves, even when the geography changes.
+            </p>
+          </div>
+        </div>
+
+        <div class="list">
+          <div class="row">
+            <div class="k">Bookmark contents</div>
+            <div class="v">
+              Each person bookmark is backed by layered character data: a stable identity, a current canon state,
+              and an archive of saved branches, so the system can build long continuity without choking on context.
+            </div>
+          </div>
+          <div class="row">
+            <div class="k">Why this matters</div>
+            <div class="v">
+              “Worlds from people” is the core fantasy: if you care about someone, the system should be able to place you near them,
+              then populate the space with meaningful nearby objects, not random filler.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WORLD PLANE -->
+    <section id="plane">
+      <div class="grid">
+        <div class="card pad span6">
+          <div class="subhead">II. World Construction</div>
+          <h2>The plane is chosen by intersection, then filled by proximity</h2>
+          <p class="lead">
+            Once you select the person or group, Slice of Life searches for the <span class="term t-violet">best-fit plane</span>
+            near their coordinates. Then it pulls images and objects into the world from above and below that plane,
+            constrained by a distance band you control.
+          </p>
+
+          <div class="diagram" style="margin-top:14px" aria-label="Plane selection and fill">
+            Input: selected people P1..Pn
+            <br/>
+            Find: plane π minimizing distance(Pi, π) across i
+            <br/>
+            Fill: include objects within ±D of π (D = 5, 10, etc.)
+            <br/>
+            Result: a dense, navigable slice that “belongs” to the selected cast
+          </div>
+        </div>
+
+        <div class="card pad span6">
+          <div class="subhead">Distance Controls</div>
+          <h2>±5, ±10, and “tight vs cinematic” worlds</h2>
+          <p class="lead">
+            A smaller band gives you a tight neighborhood. A larger band gives you a cinematic slice with more vertical variety.
+            The system can also auto-tune the band if the intersection is too sparse.
+          </p>
+
+          <div class="tiles">
+            <div class="tile">
+              <div class="badge b4">Tight</div>
+              <h3>±5</h3>
+              <p>Dense, readable, intimate. Great for dialogue scenes and everyday realism.</p>
+            </div>
+            <div class="tile">
+              <div class="badge b2">Wide</div>
+              <h3>±10</h3>
+              <p>More objects, more texture, more “life happening around them.”</p>
+            </div>
+            <div class="tile">
+              <div class="badge b1">Auto</div>
+              <h3>Optimized fill</h3>
+              <p>If needed, the engine searches for the closest plane that still yields a satisfying amount of matter.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MEMORY & PRUNING -->
+    <section id="memory">
+      <div class="card pad">
+        <div class="subhead">III. Memory & Pruning</div>
+        <h2>Nothing is deleted. It’s just made inaccessible… until it leaks back.</h2>
+        <p class="lead">
+          Atlas characters are designed for deep continuity without burning the context window.
+          That means the system can <span class="term t-amber">prune</span> what the character can actively recall,
+          while still keeping their full archive stored. Under normal conditions they won’t recite the archive.
+          Under pressure, the past can echo.
+        </p>
+
+        <div class="tiles">
+          <div class="tile">
+            <div class="badge b3">Layer 1</div>
+            <h3><span class="term t-mint">Core Identity</span></h3>
+            <p>Name, voice, motivations, fears, baseline vibe. Always loaded. Never breaks.</p>
+          </div>
+          <div class="tile">
+            <div class="badge b1">Layer 2</div>
+            <h3><span class="term t-cyan">Active Canon</span></h3>
+            <p>What’s happening now in this world. Changes constantly.</p>
+          </div>
+          <div class="tile">
+            <div class="badge b2">Layer 3</div>
+            <h3><span class="term t-violet">Lore Archive</span></h3>
+            <p>Saved branches and versions. Stored forever, only surfaced when relevant.</p>
+          </div>
+        </div>
+
+        <div class="list">
+          <div class="row">
+            <div class="k">Default behavior</div>
+            <div class="v">
+              They don’t “know the system.” If the world changes, they explain it like a person would:
+              fog, doors, holes, panic, fleeing, losing time.
+            </div>
+          </div>
+          <div class="row">
+            <div class="k">Resonant bleed</div>
+            <div class="v">
+              Even when memory is pruned, emotional afterimages can surface: “I don’t know why this feels familiar.”
+              The past is present as sensation first, facts second.
+            </div>
+          </div>
+          <div class="row">
+            <div class="k">High stress unlock</div>
+            <div class="v">
+              Under extreme pressure, fragments can break through as confused certainty:
+              “It’s you… you told me about this.” The system treats it as trauma-driven recall, not a clean database lookup.
+            </div>
+          </div>
+        </div>
+
+        <div class="quote">
+          <p>
+            <b>Design promise:</b> You can edit a character forever, prune them for performance, and still have them feel continuous.
+            The past doesn’t vanish. It waits in the walls.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- WORLD TRAVERSAL -->
+    <section id="travel">
+      <div class="card pad">
+        <div class="subhead">IV. Traversal</div>
+        <h2>Multiple worlds in one sphere, connected by intersection points</h2>
+        <p class="lead">
+          If a single sphere contains multiple worlds, Slice of Life allows traversal through points of intersection:
+          shared objects, overlapping coordinates, recurring motifs, or areas of dense proximity.
+          You can cross worlds, and you can bring people with you.
+        </p>
+
+        <div class="tiles">
+          <div class="tile">
+            <div class="badge b1">Gate</div>
+            <h3>Intersection points</h3>
+            <p>A shared cluster becomes a passage. Worlds connect where meaning overlaps.</p>
+          </div>
+          <div class="tile">
+            <div class="badge b6">Return</div>
+            <h3>Back to origin</h3>
+            <p>
+              Bring someone back to their original world and they can still feel déjà vu,
+              even if factual memory is pruned.
+            </p>
+          </div>
+          <div class="tile">
+            <div class="badge b5">Endless</div>
+            <h3>Possibilities don’t cap</h3>
+            <p>
+              Personalities, lore edits, relationships, trauma, tenderness, time.
+              The world generator adapts to whatever depth you’ve built.
+            </p>
+          </div>
+        </div>
+
+        <div class="diagram" style="margin-top:14px" aria-label="Traversal idea">
+          Multiple worlds inside one sphere
+          <br/>
+          → traverse via overlap points (shared clusters)
+          <br/>
+          → bring characters across
+          <br/>
+          → memory pruned by default, resonance leaks under stress
+          <br/>
+          → continuity survives because identity is layered and versioned
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;">
+        <div>
+          <b>Slice of Life</b> — Worlds built from people intersections.
+          <span style="color:rgba(255,255,255,.32)">|</span>
+          <span style="color:rgba(255,255,255,.60)">Continuity without resets.</span>
+        </div>
+        <div style="font-family:var(--mono); color:rgba(255,255,255,.45)">
+          People Bookmarks • Intersection Plane • ±Distance Fill • Pruned Recall • Resonant Bleed • Traversal
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
+```
