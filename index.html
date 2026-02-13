@@ -276,6 +276,58 @@
       border-top:1px solid rgba(255,255,255,.10);
       padding-top:14px;
     }
+
+    /* Repo table (NEW) */
+    .repo{
+      margin-top:16px;
+      padding-top:14px;
+      border-top:1px solid rgba(255,255,255,.10);
+    }
+    .badge2{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      color:rgba(255,255,255,.78);
+      font-size:12px;
+      font-weight:1000;
+      width:max-content;
+      margin-bottom:10px;
+    }
+    .badge2 .kdot2{
+      width:8px;height:8px;border-radius:999px;
+      background: var(--mint);
+      box-shadow: 0 0 18px rgba(52,211,153,.55);
+    }
+    .table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      overflow:hidden;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.20);
+      box-shadow: 0 10px 26px rgba(0,0,0,.18);
+    }
+    .table th, .table td{
+      padding:10px 12px;
+      font-size:13px;
+      vertical-align:top;
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    .table th{
+      text-align:left;
+      color:rgba(255,255,255,.78);
+      font-weight:1000;
+      background: rgba(255,255,255,.04);
+    }
+    .table tr:last-child td{border-bottom:none}
+    .filecell{display:flex; flex-direction:column; gap:4px}
+    .filecell a{font-weight:1000; color:var(--cyan)}
+    .smallmuted{color:rgba(255,255,255,.50); font-size:12px; font-family: var(--mono)}
   </style>
 </head>
 
@@ -527,6 +579,106 @@
         </div>
         <div style="font-family:var(--mono); color:rgba(255,255,255,.45)">
           plane.html • plane-navigation.html • plane-nav-adv.html • globe.html • lore.html • shapes.html • worlds-in-between.html
+        </div>
+      </div>
+
+      <!-- Repo list (NEW) -->
+      <div class="repo">
+        <div class="badge2"><span class="kdot2" aria-hidden="true"></span>Repository Pages</div>
+        <table class="table" aria-label="Repository pages">
+          <thead>
+            <tr>
+              <th style="width:42%">Name</th>
+              <th style="width:38%">Last commit message</th>
+              <th style="width:20%">Last commit date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div class="filecell">
+                  <a href="https://regalfyre.github.io/Atlas-Worlds/from-words-to-worlds.html" target="_blank" rel="noopener">from-words-to-worlds.html</a>
+                </div>
+              </td>
+              <td>Create from-words-to-worlds.html</td>
+              <td>2 minutes ago</td>
+            </tr>
+            <tr>
+              <td>
+                <div class="filecell">
+                  <a href="https://regalfyre.github.io/Atlas-Worlds/globe.html" target="_blank" rel="noopener">globe.html</a>
+                </div>
+              </td>
+              <td>Create globe.html</td>
+              <td>9 hours ago</td>
+            </tr>
+            <tr>
+              <td>
+                <div class="filecell">
+                  <a href="https://regalfyre.github.io/Atlas-Worlds/lore.html" target="_blank" rel="noopener">lore.html</a>
+                </div>
+              </td>
+              <td>Rename lore to lore.html</td>
+              <td>5 hours ago</td>
+            </tr>
+            <tr>
+              <td>
+                <div class="filecell">
+                  <a href="https://regalfyre.github.io/Atlas-Worlds/love-across-space-and-time.html" target="_blank" rel="noopener">love-across-space-and-time.html</a>
+                </div>
+              </td>
+              <td>Update love-across-space-and-time.html</td>
+              <td>2 hours ago</td>
+            </tr>
+            <tr>
+              <td>
+                <div class="filecell">
+                  <a href="https://regalfyre.github.io/Atlas-Worlds/plane-nav-adv.html" target="_blank" rel="noopener">plane-nav-adv.html</a>
+                </div>
+              </td>
+              <td>Create plane-nav-adv.html</td>
+              <td>4 hours ago</td>
+            </tr>
+            <tr>
+              <td>
+                <div class="filecell">
+                  <a href="https://regalfyre.github.io/Atlas-Worlds/plane-navigation.html" target="_blank" rel="noopener">plane-navigation.html</a>
+                </div>
+              </td>
+              <td>Create plane-navigation.html</td>
+              <td>4 hours ago</td>
+            </tr>
+            <tr>
+              <td>
+                <div class="filecell">
+                  <a href="https://regalfyre.github.io/Atlas-Worlds/plane.html" target="_blank" rel="noopener">plane.html</a>
+                </div>
+              </td>
+              <td>Create plane.html</td>
+              <td>4 hours ago</td>
+            </tr>
+            <tr>
+              <td>
+                <div class="filecell">
+                  <a href="https://regalfyre.github.io/Atlas-Worlds/shapes.html" target="_blank" rel="noopener">shapes.html</a>
+                </div>
+              </td>
+              <td>Create shapes.html</td>
+              <td>3 hours ago</td>
+            </tr>
+            <tr>
+              <td>
+                <div class="filecell">
+                  <a href="https://regalfyre.github.io/Atlas-Worlds/worlds-in-between.html" target="_blank" rel="noopener">worlds-in-between.html</a>
+                </div>
+              </td>
+              <td><!-- You can fill this in later if you want exact text -->Update worlds-in-between.html</td>
+              <td><!-- Fill in -->—</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="note" style="margin-top:10px;">
+          Note: index.html intentionally excluded. This table is a quick “what exists” inventory for deep links.
         </div>
       </div>
     </footer>
