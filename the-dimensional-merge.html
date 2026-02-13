@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>The Dimensional Merge</title>
+  <meta name="description" content="The Dimensional Merge: the idea behind the iterations, finally allowed to flourish with the possibility of money. A manifesto + blueprint for merging images, lore, and worlds into a traversable engine." />
+
+  <style>
+    :root{
+      --bg0:#070913;
+      --bg1:#0b1022;
+
+      --panel:rgba(255,255,255,.06);
+      --panel2:rgba(255,255,255,.035);
+      --border:rgba(255,255,255,.10);
+
+      --text:rgba(255,255,255,.92);
+      --muted:rgba(255,255,255,.68);
+      --muted2:rgba(255,255,255,.52);
+
+      --cyan:#4fd1ff;
+      --violet:#a78bfa;
+      --mint:#34d399;
+      --amber:#fbbf24;
+      --rose:#fb7185;
+      --hot:#ff3df2;
+
+      --shadow: 0 18px 60px rgba(0,0,0,.55);
+      --radius: 18px;
+      --radius2: 26px;
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      color:var(--text);
+      background:
+        radial-gradient(1200px 800px at 14% 0%, rgba(167,139,250,.18), transparent 60%),
+        radial-gradient(1000px 800px at 85% 10%, rgba(79,209,255,.14), transparent 62%),
+        radial-gradient(900px 700px at 40% 110%, rgba(52,211,153,.10), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      letter-spacing:.1px;
+      line-height:1.45;
+    }
+
+    a{color:var(--cyan); text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    .wrap{max-width:1120px; margin:0 auto; padding:26px 18px 76px}
+
+    /* Top bar */
+    .top{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:14px; padding:10px 6px 18px;
+      position:sticky; top:0; z-index:20;
+      backdrop-filter: blur(10px);
+      background: linear-gradient(180deg, rgba(7,9,19,.72), rgba(7,9,19,.28));
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      font-weight:1000;
+      letter-spacing:.2px;
+    }
+    .spark{
+      width:14px; height:14px; border-radius:999px;
+      background: conic-gradient(from 0deg, var(--cyan), var(--violet), var(--mint), var(--cyan));
+      box-shadow: 0 0 0 5px rgba(79,209,255,.10);
+    }
+    .nav{display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end}
+    .nav a{
+      color:var(--muted);
+      font-weight:800;
+      font-size:13px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid transparent;
+    }
+    .nav a:hover{
+      color:var(--text);
+      border-color: rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      text-decoration:none;
+    }
+
+    /* Cards */
+    .card{
+      background: linear-gradient(180deg, var(--panel), var(--panel2));
+      border:1px solid var(--border);
+      border-radius: var(--radius2);
+      box-shadow: var(--shadow);
+    }
+    .pad{padding:18px}
+    .pad-xl{padding:26px 22px}
+
+    h1{
+      margin:10px 0 10px;
+      font-size:46px;
+      line-height:1.03;
+      letter-spacing:-.9px;
+    }
+    @media (max-width: 520px){ h1{font-size:36px} }
+
+    .kicker{
+      display:inline-flex; align-items:center; gap:10px;
+      padding:7px 12px; border-radius:999px;
+      background: rgba(255,61,242,.10);
+      border:1px solid rgba(255,61,242,.22);
+      color: var(--muted);
+      font-size:13px;
+      font-weight:900;
+      width:max-content;
+    }
+    .kdot{
+      width:8px; height:8px; border-radius:999px;
+      background: var(--hot);
+      box-shadow: 0 0 18px rgba(255,61,242,.55);
+    }
+    .lead{
+      color:var(--muted);
+      font-size:16px;
+      max-width: 96ch;
+      margin:0;
+    }
+
+    .term{
+      font-weight:1000;
+      letter-spacing:.1px;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      display:inline-block;
+      margin:2px 4px 2px 0;
+      white-space:nowrap;
+    }
+    .t-cyan{ color: rgba(79,209,255,.95); border-color: rgba(79,209,255,.25); background: rgba(79,209,255,.08); }
+    .t-violet{ color: rgba(167,139,250,.96); border-color: rgba(167,139,250,.25); background: rgba(167,139,250,.08); }
+    .t-mint{ color: rgba(52,211,153,.96); border-color: rgba(52,211,153,.25); background: rgba(52,211,153,.08); }
+    .t-hot{ color: rgba(255,61,242,.96); border-color: rgba(255,61,242,.30); background: rgba(255,61,242,.10); box-shadow: 0 0 0 6px rgba(255,61,242,.06); }
+    .t-amber{ color: rgba(251,191,36,.95); border-color: rgba(251,191,36,.25); background: rgba(251,191,36,.08); }
+    .t-rose{ color: rgba(251,113,133,.95); border-color: rgba(251,113,133,.25); background: rgba(251,113,133,.08); }
+
+    /* Two-column */
+    .grid{
+      margin-top:16px;
+      display:grid;
+      grid-template-columns: 1.35fr .65fr;
+      gap:14px;
+      align-items:start;
+    }
+    @media (max-width: 940px){
+      .grid{grid-template-columns:1fr}
+    }
+
+    /* Sidebar chips */
+    .chips{display:flex; flex-wrap:wrap; gap:10px}
+    .chip{
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.20);
+      padding:12px 12px;
+      box-shadow: 0 10px 26px rgba(0,0,0,.18);
+    }
+    .chip b{display:block; font-weight:1000}
+    .chip span{display:block; color:var(--muted); font-size:12px; margin-top:5px}
+
+    /* Collapsibles */
+    .modules{margin-top:14px; display:grid; gap:14px}
+    details.module{
+      border-radius: var(--radius2);
+      border:1px solid rgba(255,255,255,.10);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.035));
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    details.module > summary{
+      list-style:none;
+      cursor:pointer;
+      padding:16px 18px;
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      justify-content:space-between;
+      user-select:none;
+    }
+    details.module > summary::-webkit-details-marker{display:none}
+    .sum-left{display:flex; gap:12px; align-items:flex-start}
+    .pill{
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:1000;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      color: rgba(255,255,255,.78);
+      white-space:nowrap;
+      margin-top:2px;
+    }
+    .p0{border-color: rgba(52,211,153,.25); background: rgba(52,211,153,.07)}
+    .p1{border-color: rgba(79,209,255,.25); background: rgba(79,209,255,.07)}
+    .p2{border-color: rgba(255,61,242,.25); background: rgba(255,61,242,.07)}
+    .p3{border-color: rgba(251,191,36,.25); background: rgba(251,191,36,.07)}
+    .sum-title{
+      font-weight:1000;
+      letter-spacing:-.2px;
+      font-size:18px;
+      margin:0;
+    }
+    .sum-desc{
+      margin:6px 0 0;
+      color: var(--muted);
+      font-size:13px;
+      max-width: 90ch;
+    }
+    .sum-right{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      align-items:flex-end;
+      min-width: 140px;
+      padding-left:10px;
+    }
+    .chev{
+      width:36px; height:36px; border-radius:12px;
+      display:grid; place-items:center;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      color: rgba(255,255,255,.80);
+      font-weight:1000;
+    }
+    details[open] .chev{transform: rotate(180deg)}
+    .chev{transition: transform .18s ease}
+
+    .module-body{
+      border-top:1px solid rgba(255,255,255,.08);
+      padding:16px 18px 18px;
+      background: rgba(0,0,0,.20);
+    }
+
+    .callout{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      border-radius: 18px;
+      padding:14px 14px;
+    }
+    .callout b{font-weight:1000}
+    .callout p{margin:8px 0 0; color:var(--muted); font-size:13px}
+
+    .mono{
+      font-family: var(--mono);
+      color: rgba(255,255,255,.78);
+      font-size: 12px;
+      line-height: 1.55;
+      background: rgba(0,0,0,.22);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 18px;
+      padding: 14px 14px;
+      overflow:auto;
+      white-space:pre;
+    }
+
+    .row{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+      margin-top:12px;
+    }
+    @media (max-width: 820px){ .row{grid-template-columns:1fr} }
+
+    .list{
+      margin:10px 0 0;
+      padding-left:18px;
+      color: rgba(255,255,255,.78);
+      font-size:13px;
+    }
+    .list li{margin:6px 0}
+    .muted{color:var(--muted)}
+    .fine{color:rgba(255,255,255,.50); font-size:12px; margin-top:10px}
+    footer{
+      margin-top:28px;
+      color: rgba(255,255,255,.50);
+      font-size:12px;
+      border-top:1px solid rgba(255,255,255,.10);
+      padding-top:14px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+
+    <div class="top">
+      <div class="brand">
+        <span class="spark" aria-hidden="true"></span>
+        <span>The Dimensional Merge</span>
+      </div>
+      <div class="nav">
+        <a href="#thesis">Thesis</a>
+        <a href="#engine">Engine</a>
+        <a href="#economics">Economics</a>
+        <a href="#doors">Door Zones</a>
+        <a href="#roadmap">Roadmap</a>
+        <a href="#truth">Why It Works</a>
+      </div>
+    </div>
+
+    <div class="card pad-xl" id="thesis">
+      <div class="kicker"><span class="kdot"></span>Manifesto Page</div>
+      <h1>
+        The <span class="term t-hot">Dimensional Merge</span><br/>
+        where <span class="term t-violet">images</span>, <span class="term t-cyan">text</span>, and <span class="term t-mint">movement</span> fuse.
+      </h1>
+      <p class="lead">
+        This is the idea behind the iterations: the moment where your archive stops being a folder and becomes a place.
+        Where a picture stops being “content” and becomes a coordinate. Where dialogue isn’t a script, it’s a <span class="term t-cyan">navigation system</span>.
+        And the difference now is simple: money makes it sustainable, scalable, and sharp enough to actually ship.
+      </p>
+
+      <div class="grid">
+        <div>
+          <div class="callout">
+            <b>One sentence:</b>
+            <p>
+              The Dimensional Merge turns any pile of assets (images, items, characters, locations, lore) into a traversable world
+              whose physics are semantic and whose history is persistent.
+            </p>
+          </div>
+
+          <div class="row">
+            <div class="callout">
+              <b>What you already built (in pieces)</b>
+              <p>
+                Plane, Sphere, Lore, Shapes, In-Between. Each page is a limb. The Merge is the nervous system.
+              </p>
+            </div>
+            <div class="callout">
+              <b>What money enables</b>
+              <p>
+                Reliability, compute, memory, asset processing, moderation options, and the “photo artifact” loop that turns moments into shareable proof.
+              </p>
+            </div>
+          </div>
+
+          <div class="mono" aria-label="The merge in ASCII">
+[ASSETS]  images + items + people + locations + user text
+   |        (some labeled, some unlabeled)
+   v
+[CAPTION/TAG]  "what is this?" -> tags + short summaries
+   |
+   v
+[WORLD WEAVE]  LLM ties everything together into cohesive lore + quests + danger + doors
+   |
+   v
+[COORDINATES]  semantic placement on Plane/Sphere -> spaced distribution (anti-cluster rules)
+   |
+   v
+[TRAVERSE]  player moves; companions follow; threats chase; doors gate deep scenes
+   |
+   v
+[EVENT]  behind-the-door session -> dialogue + actions -> "moment summary"
+   |
+   v
+[ARTIFACT]  generate image + caption pair -> saved into lore -> becomes a new anchor
+          </div>
+
+          <p class="fine">
+            The Merge is not “a story generator.” It’s a <b>world compiler</b>: it compiles narrative into space, then compiles events back into artifacts.
+          </p>
+        </div>
+
+        <aside>
+          <div class="chips">
+            <div class="chip">
+              <b><span class="term t-cyan">Images</span> become coordinates</b>
+              <span>Every image can be an anchor, a landmark, a memory node.</span>
+            </div>
+            <div class="chip">
+              <b><span class="term t-violet">Text</span> becomes physics</b>
+              <span>Heat, drift, attraction, avoidance, threshold rules.</span>
+            </div>
+            <div class="chip">
+              <b><span class="term t-mint">Motion</span> becomes meaning</b>
+              <span>Follow, flee, search, hide, converge, disperse.</span>
+            </div>
+            <div class="chip">
+              <b><span class="term t-amber">Money</span> becomes continuity</b>
+              <span>More memory, better artifacts, deeper door-scenes, more places.</span>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <div class="modules" id="engine">
+
+      <details class="module" open>
+        <summary>
+          <div class="sum-left">
+            <div class="pill p1">The Core Engine</div>
+            <div>
+              <div class="sum-title">World Compiler, not “content generation”</div>
+              <p class="sum-desc">
+                The Merge is a loop: <span class="term t-violet">assets → meaning → space → events → artifacts → assets</span>.
+                That loop is why it grows without collapsing into noise.
+              </p>
+            </div>
+          </div>
+          <div class="sum-right">
+            <div class="chev">⌄</div>
+          </div>
+        </summary>
+        <div class="module-body">
+          <div class="row">
+            <div class="callout">
+              <b>Step 1: Asset Ingestion</b>
+              <p class="muted">
+                You hand the system any amount of assets: character images, item images, location images, plus optional lore pages.
+                Some assets are unlabeled. That’s fine.
+              </p>
+              <ul class="list">
+                <li>Characters (with optional lore pages)</li>
+                <li>Items (can start “unmovable” in v1)</li>
+                <li>Locations (handmade or generated)</li>
+                <li>Threats/creatures (simple chase logic)</li>
+                <li>Door Zones (interior scenes)</li>
+              </ul>
+            </div>
+            <div class="callout">
+              <b>Step 2: Tagging / Captioning</b>
+              <p class="muted">
+                If an image has no text pairing, the machine generates one: tags + a short summary.
+                This becomes “semantic fuel” for world-building.
+              </p>
+              <div class="mono" style="white-space:pre-wrap">
+Input: image.png (no label)
+Output:
+  tags: ["weathered door", "neon hallway", "rain", "warning signs"]
+  caption: "A narrow corridor with neon spill and a door that looks like it has survived three histories."
+              </div>
+              <div class="fine">
+                This is where unlabeled media becomes “readable.” The Merge does not require perfect curation.
+              </div>
+            </div>
+          </div>
+
+          <div class="callout" style="margin-top:12px;">
+            <b>Step 3: Weave (the World Stitch)</b>
+            <p>
+              The LLM ties everything into a coherent world-state: who knows who, what matters, what’s dangerous,
+              what doors exist, what places feel safe. This is where your “semantic-games” logic lives:
+              <span class="term t-cyan">follow</span>, <span class="term t-rose">flee</span>, <span class="term t-amber">search</span>,
+              <span class="term t-mint">heal</span>, <span class="term t-violet">remember</span>.
+            </p>
+          </div>
+
+          <div class="row">
+            <div class="callout">
+              <b>Step 4: Place (Anti-Cluster Distribution)</b>
+              <p class="muted">
+                The world is spatial. Items and people are distributed across the map with “distance rules”:
+                no mega piles, no accidental cities of everything. Companions are usually in pairs at most.
+              </p>
+              <ul class="list">
+                <li>Max density per grid cell</li>
+                <li>Minimum spacing between anchors</li>
+                <li>Affinity pulls (friends closer) but capped</li>
+                <li>Threat zones keep distance from safe hubs</li>
+              </ul>
+            </div>
+            <div class="callout">
+              <b>Step 5: Traverse (Player + NPC Loop)</b>
+              <p class="muted">
+                You move. Companions follow. Threats seek. Doors gate scenes.
+                v1 can be minimal and still feel alive: pursuit, hiding, healing, reunion.
+              </p>
+              <div class="mono">State machine (v1):
+  Player: explore | flee | hide | recover
+  Companion: follow | warn | comfort | scout
+  Threat: patrol | chase | lose_target
+  DoorZone: locked | available | active_scene</div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details class="module" id="doors">
+        <summary>
+          <div class="sum-left">
+            <div class="pill p2">Door Zones</div>
+            <div>
+              <div class="sum-title">The “Closed Door” is where the real game lives</div>
+              <p class="sum-desc">
+                Outside is traversal and tension. Inside is intimacy, ceremony, decisions, and moments that become permanent artifacts.
+              </p>
+            </div>
+          </div>
+          <div class="sum-right">
+            <div class="chev">⌄</div>
+          </div>
+        </summary>
+
+        <div class="module-body">
+          <div class="callout">
+            <b>Door Zones are gated scenes with higher semantic bandwidth.</b>
+            <p class="muted">
+              Outside, you’re running a map: movement, danger, distance, pursuit. Door Zones compress the world into a protected stage.
+              That stage is where the system can safely do deeper interaction without exploding compute on every step.
+            </p>
+          </div>
+
+          <div class="row">
+            <div class="callout">
+              <b>Examples of Door Zones</b>
+              <ul class="list">
+                <li><b>Safe Room</b>: comfort, plans, relationship bonds</li>
+                <li><b>Office / Court / Temple</b>: paperwork, marriage, vows, contracts</li>
+                <li><b>Kitchen / Backyard</b>: domestic scenes, “normal life”</li>
+                <li><b>Workshop</b>: crafting, combining, prototyping items</li>
+                <li><b>Clinic</b>: healing, recovery, consequences</li>
+                <li><b>Memory Chamber</b>: recap, reminiscing, curated “top ten moments”</li>
+              </ul>
+            </div>
+            <div class="callout">
+              <b>Why Door Zones matter</b>
+              <ul class="list">
+                <li>They reduce “world compute” while increasing “relationship compute.”</li>
+                <li>They create high-impact moments worth saving.</li>
+                <li>They produce artifacts: images + captions that become anchors.</li>
+                <li>They let the user choose model options (tone/style) without rewriting the whole outside world.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="callout" style="margin-top:12px;">
+            <b>The Artifact Loop (the “commemorate it” feature)</b>
+            <p class="muted">
+              After a Door Zone session, the engine produces a short “moment summary.” Then it generates a commemorative image:
+              the user’s character(s) + companions in the scene, plus a caption pairing. This gets stored in lore and can be shared.
+              The picture isn’t decoration. It’s a new coordinate. The world literally grows around what happened.
+            </p>
+            <div class="mono" style="white-space:pre-wrap">DoorZone Session -> Moment Summary -> Generated Image -> Caption Pairing -> Saved Lore -> New Anchor Node</div>
+          </div>
+
+          <div class="fine">
+            Door Zones are the secret: they let the world feel infinite while compute stays sane.
+          </div>
+        </div>
+      </details>
+
+      <details class="module" id="economics">
+        <summary>
+          <div class="sum-left">
+            <div class="pill p3">Economics</div>
+            <div>
+              <div class="sum-title">Money doesn’t cheapen it. It stabilizes it.</div>
+              <p class="sum-desc">
+                The Merge thrives on continuity: memory, artifacts, and time. Pricing is how you make continuity honest and sustainable.
+              </p>
+            </div>
+          </div>
+          <div class="sum-right">
+            <div class="chev">⌄</div>
+          </div>
+        </summary>
+
+        <div class="module-body">
+          <div class="row">
+            <div class="callout">
+              <b>What you’re really selling</b>
+              <p class="muted">
+                Not “tokens.” Not “messages.” Not “images.”
+                You’re selling <span class="term t-mint">continuity</span>: the feeling that a world remembers you,
+                and the proof of it in artifacts.
+              </p>
+              <ul class="list">
+                <li>More door sessions (deeper scenes)</li>
+                <li>More commemorative images (artifact density)</li>
+                <li>Bigger / smarter memory compaction</li>
+                <li>More locations and encounters</li>
+              </ul>
+            </div>
+            <div class="callout">
+              <b>Compaction without “hostage energy”</b>
+              <p class="muted">
+                Language matters. The pitch is: the world never deletes you.
+                It simply compresses older details into high-signal summaries until you choose to expand them again.
+              </p>
+              <div class="mono" style="white-space:pre-wrap">Premium: "I remember the night exactly."
+Standard: "I remember it was one of the best nights of my life."
+Free: "I remember we were close."</div>
+              <p class="fine">
+                The key promise: <b>no deletion</b>. Only compression + rehydration when upgraded.
+              </p>
+            </div>
+          </div>
+
+          <div class="callout" style="margin-top:12px;">
+            <b>Why it becomes a business</b>
+            <p class="muted">
+              People don’t pay for “a chatbot.” They pay for a place they can return to and feel recognized.
+              The Merge produces return-value: a living album of moments, a map of memories, and characters that feel like they have a past.
+            </p>
+          </div>
+        </div>
+      </details>
+
+      <details class="module" id="roadmap">
+        <summary>
+          <div class="sum-left">
+            <div class="pill p0">Roadmap</div>
+            <div>
+              <div class="sum-title">v1 to v2, without losing the soul</div>
+              <p class="sum-desc">
+                v1 is minimal traversal + doors. v2 adds item interaction, richer rigs, and deeper “world physics.”
+              </p>
+            </div>
+          </div>
+          <div class="sum-right">
+            <div class="chev">⌄</div>
+          </div>
+        </summary>
+
+        <div class="module-body">
+          <div class="row">
+            <div class="callout">
+              <b>Semantic-Games v1 (ship fast)</b>
+              <ul class="list">
+                <li>Traverse a 2D plane (grid or navmesh)</li>
+                <li>Companions follow + contextual dialogue</li>
+                <li>Threats chase; hiding breaks pursuit</li>
+                <li>Health bar + recovery loop</li>
+                <li>Door Zones = rich scenes + artifact generation</li>
+                <li>Items can be static (even “unmovable”) with in-world acknowledgment</li>
+              </ul>
+            </div>
+            <div class="callout">
+              <b>Semantic-Games v2 (expand)</b>
+              <ul class="list">
+                <li>Item pickup + weight + inventory semantics</li>
+                <li>“Jointed” characters: more expressive animations</li>
+                <li>Procedural interior layouts for Door Zones</li>
+                <li>More robust memory rehydration</li>
+                <li>Multi-map travel (worlds connected by thresholds)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="callout" style="margin-top:12px;">
+            <b>Important design rule</b>
+            <p class="muted">
+              Keep the outside simple and legible. Put the depth behind doors. That’s how you scale story without drowning in simulation.
+            </p>
+          </div>
+        </div>
+      </details>
+
+      <details class="module" id="truth">
+        <summary>
+          <div class="sum-left">
+            <div class="pill p1">Why It Works</div>
+            <div>
+              <div class="sum-title">The Merge feels inevitable once you see it</div>
+              <p class="sum-desc">
+                It turns the internet’s three strongest forces into one machine: <span class="term t-violet">images</span>, <span class="term t-cyan">conversation</span>, <span class="term t-mint">identity</span>.
+              </p>
+            </div>
+          </div>
+          <div class="sum-right">
+            <div class="chev">⌄</div>
+          </div>
+        </summary>
+
+        <div class="module-body">
+          <div class="row">
+            <div class="callout">
+              <b>Images are memory</b>
+              <p class="muted">
+                People don’t remember their lives as paragraphs. They remember as snapshots.
+                Your artifact loop turns the product into a <b>living album</b> that can talk back.
+              </p>
+            </div>
+            <div class="callout">
+              <b>Conversation is navigation</b>
+              <p class="muted">
+                The player doesn’t “click story.” They speak intention. The world routes around intention:
+                pursue safety, find someone, avoid danger, go inside, mark the moment.
+              </p>
+            </div>
+          </div>
+
+          <div class="callout" style="margin-top:12px;">
+            <b>Identity is the product moat</b>
+            <p class="muted">
+              A generated world is cool once. A world that knows you is addictive. A world that proves it with artifacts is unforgettable.
+              The Merge creates a “return gravity” where users come back because their history is there, waiting.
+            </p>
+          </div>
+
+          <div class="fine">
+            The Dimensional Merge is a single invention with many skins: romance, adventure, horror, slice-of-life, ceremony, myth.
+            The engine stays the same. The world changes with the assets and the choices.
+          </div>
+        </div>
+      </details>
+
+    </div>
+
+    <footer>
+      <div>
+        <b>The Dimensional Merge</b>
+        <span style="color:rgba(255,255,255,.32)">|</span>
+        <span style="color:rgba(255,255,255,.60)">An engine that turns archives into places.</span>
+      </div>
+      <div style="font-family:var(--mono); color:rgba(255,255,255,.45)">
+        images → tags → world weave → coordinates → traverse → door zones → artifacts → new worlds
+      </div>
+    </footer>
+
+  </div>
+
+  <script>
+    // Open by hash (#thesis, #engine, #economics, #doors, #roadmap, #truth)
+    // and scroll into view. (Details open state is preserved for modules when targeted.)
+    function openFromHash(){
+      const id = (location.hash || "").replace("#","");
+      if(!id) return;
+
+      const target = document.getElementById(id);
+      if(!target) return;
+
+      if(target.tagName.toLowerCase() === "details"){
+        target.open = true;
+      }
+
+      setTimeout(() => target.scrollIntoView({behavior:"smooth", block:"start"}), 80);
+    }
+
+    window.addEventListener("hashchange", openFromHash);
+    openFromHash();
+  </script>
+</body>
+</html>
