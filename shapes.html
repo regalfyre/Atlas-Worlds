@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Atlas Shapes — The Shape of Our Vision</title>
+  <meta name="description" content="Atlas Shapes: pick 4 images to form planes between them, then set depth via up/down distance or top/bottom images. Dense clusters auto-populate the faces, turning meaning into a 3D box you can save and annotate." />
+
+  <style>
+    :root{
+      --bg0:#070913;
+      --bg1:#0b1022;
+      --panel:rgba(255,255,255,.06);
+      --panel2:rgba(255,255,255,.035);
+      --border:rgba(255,255,255,.10);
+      --text:rgba(255,255,255,.92);
+      --muted:rgba(255,255,255,.68);
+      --muted2:rgba(255,255,255,.52);
+
+      --cyan:#4fd1ff;
+      --violet:#a78bfa;
+      --mint:#34d399;
+      --amber:#fbbf24;
+      --rose:#fb7185;
+      --hot:#ff3df2;
+
+      --shadow: 0 18px 60px rgba(0,0,0,.55);
+      --radius: 18px;
+      --radius2: 26px;
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      color:var(--text);
+      background:
+        radial-gradient(1200px 800px at 14% 0%, rgba(167,139,250,.18), transparent 60%),
+        radial-gradient(1000px 800px at 85% 10%, rgba(79,209,255,.14), transparent 62%),
+        radial-gradient(900px 700px at 40% 110%, rgba(52,211,153,.10), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      letter-spacing:.1px;
+      line-height:1.45;
+    }
+
+    a{color:var(--cyan); text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    .wrap{max-width:1180px; margin:0 auto; padding:28px 18px 84px}
+
+    /* Top bar */
+    .top{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:14px; padding:10px 6px 18px;
+      position:sticky; top:0; z-index:20;
+      backdrop-filter: blur(10px);
+      background: linear-gradient(180deg, rgba(7,9,19,.72), rgba(7,9,19,.28));
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      font-weight:1000; letter-spacing:.2px;
+    }
+    .spark{
+      width:14px; height:14px; border-radius:999px;
+      background: conic-gradient(from 0deg, var(--cyan), var(--violet), var(--mint), var(--cyan));
+      box-shadow: 0 0 0 5px rgba(79,209,255,.10);
+    }
+    .nav{display:flex; gap:14px; flex-wrap:wrap}
+    .nav a{
+      color:var(--muted);
+      font-weight:800;
+      font-size:13px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid transparent;
+    }
+    .nav a:hover{
+      color:var(--text);
+      border-color: rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      text-decoration:none;
+    }
+
+    /* Cards */
+    .card{
+      background: linear-gradient(180deg, var(--panel), var(--panel2));
+      border:1px solid var(--border);
+      border-radius: var(--radius2);
+      box-shadow: var(--shadow);
+    }
+    .pad{padding:18px}
+    .pad-xl{padding:26px 22px}
+
+    /* Hero */
+    .hero{
+      display:grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap:16px;
+      align-items:stretch;
+      margin-top:8px;
+    }
+    @media (max-width: 940px){ .hero{grid-template-columns:1fr} }
+
+    .kicker{
+      display:inline-flex; align-items:center; gap:10px;
+      padding:7px 12px; border-radius:999px;
+      background: rgba(79,209,255,.10);
+      border:1px solid rgba(79,209,255,.22);
+      color: var(--muted);
+      font-size:13px;
+      font-weight:800;
+      width:max-content;
+    }
+    .kdot{
+      width:8px; height:8px; border-radius:999px;
+      background: var(--cyan);
+      box-shadow: 0 0 18px rgba(79,209,255,.65);
+    }
+
+    h1{
+      margin:14px 0 10px;
+      font-size:44px;
+      line-height:1.03;
+      letter-spacing:-.8px;
+    }
+    @media (max-width: 520px){ h1{font-size:34px} }
+
+    .lead{
+      color:var(--muted);
+      font-size:16px;
+      max-width: 84ch;
+      margin:0;
+    }
+
+    .term{
+      font-weight:1000;
+      letter-spacing:.1px;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      display:inline-block;
+      margin:2px 4px 2px 0;
+      white-space:nowrap;
+    }
+    .t-cyan{ color: rgba(79,209,255,.95); border-color: rgba(79,209,255,.25); background: rgba(79,209,255,.08); }
+    .t-violet{ color: rgba(167,139,250,.96); border-color: rgba(167,139,250,.25); background: rgba(167,139,250,.08); }
+    .t-mint{ color: rgba(52,211,153,.96); border-color: rgba(52,211,153,.25); background: rgba(52,211,153,.08); }
+    .t-amber{ color: rgba(251,191,36,.95); border-color: rgba(251,191,36,.25); background: rgba(251,191,36,.08); }
+    .t-rose{ color: rgba(251,113,133,.95); border-color: rgba(251,113,133,.25); background: rgba(251,113,133,.08); }
+    .t-hot{
+      color: rgba(255,61,242,.96);
+      border-color: rgba(255,61,242,.30);
+      background: rgba(255,61,242,.10);
+      box-shadow: 0 0 0 6px rgba(255,61,242,.06);
+    }
+
+    .cta-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:16px}
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:10px;
+      padding:10px 14px; border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      font-weight:1000;
+      font-size:13px;
+      letter-spacing:.2px;
+    }
+    .btn.primary{
+      border-color: rgba(79,209,255,.42);
+      background: rgba(79,209,255,.12);
+      box-shadow: 0 0 0 7px rgba(79,209,255,.07);
+    }
+    .btn:hover{filter:brightness(1.08); text-decoration:none}
+
+    /* Side stack */
+    .stack{display:grid; gap:12px}
+    .mini{
+      padding:14px;
+      border-radius: var(--radius);
+      background: rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.10);
+    }
+    .mini h3{
+      margin:0 0 6px;
+      font-size:13px;
+      color:var(--muted);
+      font-weight:1000;
+      letter-spacing:.35px;
+      text-transform:uppercase;
+    }
+    .mini p{margin:0; color:var(--muted2); font-size:13px}
+
+    /* Sections */
+    section{margin-top:22px}
+    h2{
+      margin:0 0 8px;
+      font-size:24px;
+      letter-spacing:-.25px;
+    }
+    .subhead{
+      font-family:var(--mono);
+      font-size:12px;
+      color: rgba(255,255,255,.58);
+      letter-spacing:.6px;
+      text-transform:uppercase;
+      margin-bottom:8px;
+    }
+
+    /* Tiles */
+    .tiles{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap:12px;
+      margin-top:14px;
+    }
+    @media (max-width: 980px){ .tiles{grid-template-columns: repeat(2, minmax(0,1fr));} }
+    @media (max-width: 560px){ .tiles{grid-template-columns: 1fr;} }
+
+    .tile{
+      padding:14px;
+      border-radius: var(--radius);
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.20);
+      position:relative;
+      overflow:hidden;
+    }
+    .tile:before{
+      content:"";
+      position:absolute; inset:-40px -40px auto auto;
+      width:160px; height:160px;
+      background: radial-gradient(circle at 30% 30%, rgba(79,209,255,.16), transparent 60%);
+      transform: rotate(18deg);
+    }
+    .tile h3{
+      margin:0 0 6px;
+      font-size:16px;
+      letter-spacing:-.15px;
+    }
+    .tile p{margin:0; color:var(--muted); font-size:13px}
+
+    .badge{
+      display:inline-flex; align-items:center; gap:8px;
+      font-size:12px; font-weight:1000;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.76);
+      margin-bottom:10px;
+      width:max-content;
+    }
+    .b1{border-color: rgba(79,209,255,.25); background: rgba(79,209,255,.07)}
+    .b2{border-color: rgba(167,139,250,.25); background: rgba(167,139,250,.07)}
+    .b3{border-color: rgba(52,211,153,.25); background: rgba(52,211,153,.07)}
+    .b4{border-color: rgba(251,191,36,.25); background: rgba(251,191,36,.07)}
+    .b5{border-color: rgba(251,113,133,.25); background: rgba(251,113,133,.07)}
+    .b6{border-color: rgba(255,61,242,.25); background: rgba(255,61,242,.07)}
+
+    /* Diagram block */
+    .diagram{
+      font-family:var(--mono);
+      font-size:12px;
+      line-height:1.6;
+      color: rgba(255,255,255,.80);
+      background: rgba(0,0,0,.34);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius: var(--radius);
+      padding:12px;
+      overflow:auto;
+    }
+    .diagram .k{color: rgba(79,209,255,.95)}
+    .diagram .v{color: rgba(167,139,250,.95)}
+    .diagram .m{color: rgba(52,211,153,.95)}
+    .diagram .a{color: rgba(251,191,36,.95)}
+    .diagram .r{color: rgba(251,113,133,.95)}
+    .diagram .h{color: rgba(255,61,242,.95)}
+
+    /* Table-ish list */
+    .list{
+      margin-top:12px;
+      border-radius: var(--radius);
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.20);
+      overflow:hidden;
+    }
+    .row{
+      display:grid;
+      grid-template-columns: 220px 1fr;
+      gap:12px;
+      padding:12px 14px;
+      border-top:1px solid rgba(255,255,255,.08);
+    }
+    .row:first-child{border-top:none}
+    @media (max-width: 720px){
+      .row{grid-template-columns:1fr}
+    }
+    .row .k{
+      font-family:var(--mono);
+      color: rgba(255,255,255,.65);
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.6px;
+    }
+    .row .v{
+      color: var(--muted);
+      font-size:13px;
+    }
+
+    footer{
+      margin-top:28px;
+      color: rgba(255,255,255,.50);
+      font-size:12px;
+      border-top:1px solid rgba(255,255,255,.10);
+      padding-top:14px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">
+        <span class="spark" aria-hidden="true"></span>
+        <span>Atlas Shapes</span>
+      </div>
+      <div class="nav">
+        <a href="#vision">Vision</a>
+        <a href="#how">How it works</a>
+        <a href="#depth">Depth options</a>
+        <a href="#save">Save & Notes</a>
+      </div>
+    </div>
+
+    <!-- HERO -->
+    <div class="hero" id="vision">
+      <div class="card pad-xl">
+        <div class="kicker"><span class="kdot"></span>The Shape of Our Vision</div>
+
+        <h1>
+          Pick <span class="term t-rose">4 images</span>.
+          Atlas forms the <span class="term t-violet">planes between them</span>…
+          and a <span class="term t-mint">3D box</span> appears.
+        </h1>
+
+        <p class="lead">
+          Shapes are the fastest way to see <span class="term t-hot">intersectionality</span> at a glance.
+          You choose a handful of anchors inside a saturated cluster, and Atlas skins the faces with the images already living there.
+          It’s a saved object you can return to, rotate mentally, and annotate like a real artifact.
+        </p>
+
+        <div class="cta-row">
+          <a class="btn primary" href="#how">How it works (simple)</a>
+          <a class="btn" href="#depth">Depth: distance or top/bottom</a>
+          <a class="btn" href="#save">Saving & text notes</a>
+        </div>
+
+        <div class="diagram" style="margin-top:14px" aria-label="Atlas Shapes v1 mental model">
+          Select 4 anchors → Atlas spans <span class="v">planes</span> between them
+          <br/>
+          Choose depth → Atlas forms a <span class="m">quadrilateral 3D box</span>
+          <br/>
+          Dense cluster → faces auto-fill with adjacent images already at those coordinates
+          <br/>
+          Save + annotate → a reusable object, not a one-off view
+        </div>
+      </div>
+
+      <div class="card pad">
+        <div class="stack">
+          <div class="mini">
+            <h3>Why it works</h3>
+            <p>Because the coordinate space is already populated. The shape is just a clean slice of a dense neighborhood.</p>
+          </div>
+          <div class="mini">
+            <h3>Best conditions</h3>
+            <p>Ultra-saturated regions: lots of nearby images means the planes can “tile” naturally without gaps.</p>
+          </div>
+          <div class="mini">
+            <h3>Not gimmicky</h3>
+            <p>It’s just a saved, bounded view of meaning. A box is easier to understand than a thousand points.</p>
+          </div>
+          <div class="mini">
+            <h3>What you get</h3>
+            <p>A shape you can name, revisit, share, and annotate. The anchors and constraints are stored automatically.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOW IT WORKS -->
+    <section id="how">
+      <div class="card pad">
+        <div class="subhead">1. The core move</div>
+        <h2>How shapes are made (super easy)</h2>
+
+        <div class="tiles">
+          <div class="tile">
+            <div class="badge b5">Step 1</div>
+            <h3>Pick 4 images in one cluster</h3>
+            <p>
+              Select four anchors that already live near each other. Atlas infers the quadrilateral ordering and uses them as corners.
+            </p>
+          </div>
+          <div class="tile">
+            <div class="badge b2">Step 2</div>
+            <h3>Planes form between the images</h3>
+            <p>
+              Atlas spans planes between the selected anchors, creating a face that represents “what exists between these meanings.”
+            </p>
+          </div>
+          <div class="tile">
+            <div class="badge b3">Step 3</div>
+            <h3>The face auto-populates</h3>
+            <p>
+              Because images are already placed in coordinate space, the face is filled by adjacent images that sit on that region.
+            </p>
+          </div>
+        </div>
+
+        <div class="list">
+          <div class="row">
+            <div class="k">What is a “face” here?</div>
+            <div class="v">
+              A face is a bounded plane inside a dense neighborhood. It’s a readable surface made from what already exists nearby.
+            </div>
+          </div>
+          <div class="row">
+            <div class="k">Why 4?</div>
+            <div class="v">
+              Four anchors are enough to define a quadrilateral surface that can be populated without requiring complicated user input.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DEPTH OPTIONS -->
+    <section id="depth">
+      <div class="card pad">
+        <div class="subhead">2. Depth</div>
+        <h2>Two ways to give the face a 3D box</h2>
+
+        <div class="tiles">
+          <div class="tile">
+            <div class="badge b4">Option A</div>
+            <h3><span class="term t-amber">Distance Up / Down</span></h3>
+            <p>
+              You choose a depth amount above and below the face. Atlas forms the top and bottom planes at those offsets.
+            </p>
+          </div>
+
+          <div class="tile">
+            <div class="badge b6">Option B (optional)</div>
+            <h3><span class="term t-hot">Pick an image above + an image below</span></h3>
+            <p>
+              Instead of a number, you select a top anchor and a bottom anchor. Those define the top and bottom planes directly.
+            </p>
+          </div>
+
+          <div class="tile">
+            <div class="badge b3">Result</div>
+            <h3>A quadrilateral <span class="term t-mint">3D box</span></h3>
+            <p>
+              The face becomes a box with multiple populated planes. The shape “fills” best when the cluster is ultra-saturated.
+            </p>
+          </div>
+        </div>
+
+        <div class="diagram" style="margin-top:14px" aria-label="Depth summary diagram">
+          <span class="v">4 image anchors</span> → define the main face
+          <br/>
+          Depth Option A: <span class="a">distance up/down</span> → top plane + bottom plane
+          <br/>
+          Depth Option B: <span class="h">image above + image below</span> → top plane + bottom plane
+          <br/><br/>
+          Then: side planes connect → <span class="m">quadrilateral 3D box</span>
+          <br/>
+          Faces populate from nearby images because the space is already dense.
+        </div>
+      </div>
+    </section>
+
+    <!-- SAVE & NOTES -->
+    <section id="save">
+      <div class="card pad">
+        <div class="subhead">3. Saving</div>
+        <h2>Save the shape, annotate the images, keep the constraints</h2>
+
+        <div class="tiles">
+          <div class="tile">
+            <div class="badge b1">Automatic</div>
+            <h3>Anchors + constraints are stored</h3>
+            <p>
+              The shape stores which images formed it, the face definition, and the depth definition (numeric or top/bottom images).
+            </p>
+          </div>
+          <div class="tile">
+            <div class="badge b2">Notes</div>
+            <h3>Text per image or for the whole shape</h3>
+            <p>
+              Add a caption to any image on a face, or attach a single explanation describing what this shape represents.
+            </p>
+          </div>
+          <div class="tile">
+            <div class="badge b3">Purpose</div>
+            <h3>Fast recall of intersectionality</h3>
+            <p>
+              Shapes are saved artifacts. They exist so you can see a multi-meaning intersection instantly, without re-finding it.
+            </p>
+          </div>
+        </div>
+
+        <div class="list">
+          <div class="row">
+            <div class="k">What gets saved</div>
+            <div class="v">
+              The 4 face images, the depth method (up/down or top/bottom images), and the rules that produced the populated faces.
+            </div>
+          </div>
+          <div class="row">
+            <div class="k">Why density matters</div>
+            <div class="v">
+              Ultra-saturated clusters have enough adjacent images to populate the planes cleanly. Sparse regions produce thin faces.
+            </div>
+          </div>
+          <div class="row">
+            <div class="k">What you can do with it</div>
+            <div class="v">
+              Save it as a named object, revisit it anytime, and use it as a quick “at-a-glance” map of a dense intersection.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;">
+        <div>
+          <b>Atlas Shapes</b> — The Shape of Our Vision
+          <span style="color:rgba(255,255,255,.32)">|</span>
+          <span style="color:rgba(255,255,255,.60)">Intersectionality you can save.</span>
+        </div>
+        <div style="font-family:var(--mono); color:rgba(255,255,255,.45)">
+          4 anchors • planes • depth • 3D box • populated faces • notes • saved constraints
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
