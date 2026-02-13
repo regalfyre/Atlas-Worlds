@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Atlas Plane Navigation — Advanced (Swivel Door Traversal)</title>
+  <meta name="description" content="Plane Navigation Advanced: pick an image by coordinate, open a plane around it via offsets, swivel a dial to rotate axis view, and save a full reproducible snapshot (dataset, seeds, heat, composites, offsets, dial rotation)." />
+
+  <style>
+    :root{
+      --bg0:#070913;
+      --bg1:#0b1022;
+      --panel:rgba(255,255,255,.06);
+      --panel2:rgba(255,255,255,.035);
+      --border:rgba(255,255,255,.10);
+      --text:rgba(255,255,255,.92);
+      --muted:rgba(255,255,255,.68);
+      --muted2:rgba(255,255,255,.52);
+
+      --cyan:#4fd1ff;
+      --violet:#a78bfa;
+      --mint:#34d399;
+      --amber:#fbbf24;
+      --rose:#fb7185;
+      --hot:#ff3df2;
+
+      --shadow: 0 18px 60px rgba(0,0,0,.55);
+      --radius: 18px;
+      --radius2: 26px;
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      color:var(--text);
+      background:
+        radial-gradient(1200px 800px at 14% 0%, rgba(167,139,250,.18), transparent 60%),
+        radial-gradient(1000px 800px at 85% 10%, rgba(79,209,255,.14), transparent 62%),
+        radial-gradient(900px 700px at 40% 110%, rgba(52,211,153,.10), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      letter-spacing:.1px;
+      line-height:1.45;
+    }
+
+    a{color:var(--cyan); text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    .wrap{max-width:1180px; margin:0 auto; padding:28px 18px 84px}
+
+    /* Top bar */
+    .top{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:14px; padding:10px 6px 18px;
+      position:sticky; top:0; z-index:20;
+      backdrop-filter: blur(10px);
+      background: linear-gradient(180deg, rgba(7,9,19,.72), rgba(7,9,19,.28));
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      font-weight:1000;
+      letter-spacing:.2px;
+    }
+    .spark{
+      width:14px; height:14px; border-radius:999px;
+      background: conic-gradient(from 0deg, var(--cyan), var(--violet), var(--mint), var(--cyan));
+      box-shadow: 0 0 0 5px rgba(79,209,255,.10);
+    }
+    .nav{display:flex; gap:10px; flex-wrap:wrap}
+    .nav a{
+      color:var(--muted);
+      font-weight:800;
+      font-size:13px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid transparent;
+    }
+    .nav a:hover{
+      color:var(--text);
+      border-color: rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      text-decoration:none;
+    }
+
+    /* Cards */
+    .card{
+      background: linear-gradient(180deg, var(--panel), var(--panel2));
+      border:1px solid var(--border);
+      border-radius: var(--radius2);
+      box-shadow: var(--shadow);
+    }
+    .pad{padding:18px}
+    .pad-xl{padding:26px 22px}
+
+    /* Hero */
+    h1{
+      margin:14px 0 10px;
+      font-size:44px;
+      line-height:1.03;
+      letter-spacing:-.8px;
+    }
+    @media (max-width: 520px){ h1{font-size:34px} }
+
+    .kicker{
+      display:inline-flex; align-items:center; gap:10px;
+      padding:7px 12px; border-radius:999px;
+      background: rgba(79,209,255,.10);
+      border:1px solid rgba(79,209,255,.22);
+      color: var(--muted);
+      font-size:13px;
+      font-weight:800;
+      width:max-content;
+    }
+    .kdot{
+      width:8px; height:8px; border-radius:999px;
+      background: var(--cyan);
+      box-shadow: 0 0 18px rgba(79,209,255,.65);
+    }
+    .lead{
+      color:var(--muted);
+      font-size:16px;
+      max-width: 90ch;
+      margin:0;
+    }
+
+    .term{
+      font-weight:1000;
+      letter-spacing:.1px;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      display:inline-block;
+      margin:2px 4px 2px 0;
+      white-space:nowrap;
+    }
+    .t-cyan{ color: rgba(79,209,255,.95); border-color: rgba(79,209,255,.25); background: rgba(79,209,255,.08); }
+    .t-violet{ color: rgba(167,139,250,.96); border-color: rgba(167,139,250,.25); background: rgba(167,139,250,.08); }
+    .t-mint{ color: rgba(52,211,153,.96); border-color: rgba(52,211,153,.25); background: rgba(52,211,153,.08); }
+    .t-amber{ color: rgba(251,191,36,.95); border-color: rgba(251,191,36,.25); background: rgba(251,191,36,.08); }
+    .t-rose{ color: rgba(251,113,133,.95); border-color: rgba(251,113,133,.25); background: rgba(251,113,133,.08); }
+    .t-hot{ color: rgba(255,61,242,.96); border-color: rgba(255,61,242,.30); background: rgba(255,61,242,.10); box-shadow: 0 0 0 6px rgba(255,61,242,.06); }
+
+    /* Sections */
+    section{margin-top:22px}
+    h2{
+      margin:0 0 8px;
+      font-size:24px;
+      letter-spacing:-.25px;
+    }
+    .subhead{
+      font-family:var(--mono);
+      font-size:12px;
+      color: rgba(255,255,255,.58);
+      letter-spacing:.6px;
+      text-transform:uppercase;
+      margin-bottom:8px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:14px;
+      margin-top:18px;
+    }
+    .span12{grid-column: span 12}
+    .span7{grid-column: span 7}
+    .span5{grid-column: span 5}
+    .span6{grid-column: span 6}
+    @media (max-width: 940px){
+      .span7,.span5,.span6{grid-column: span 12}
+    }
+
+    /* Tiles */
+    .tiles{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap:12px;
+      margin-top:14px;
+    }
+    @media (max-width: 980px){ .tiles{grid-template-columns: repeat(2, minmax(0,1fr));} }
+    @media (max-width: 560px){ .tiles{grid-template-columns: 1fr;} }
+
+    .tile{
+      padding:14px;
+      border-radius: var(--radius);
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.20);
+      position:relative;
+      overflow:hidden;
+    }
+    .tile:before{
+      content:"";
+      position:absolute; inset:-40px -40px auto auto;
+      width:160px; height:160px;
+      background: radial-gradient(circle at 30% 30%, rgba(79,209,255,.16), transparent 60%);
+      transform: rotate(18deg);
+    }
+    .tile h3{
+      margin:0 0 6px;
+      font-size:16px;
+      letter-spacing:-.15px;
+    }
+    .tile p{margin:0; color:var(--muted); font-size:13px}
+
+    /* Diagram block */
+    .diagram{
+      font-family:var(--mono);
+      font-size:12px;
+      line-height:1.6;
+      color: rgba(255,255,255,.80);
+      background: rgba(0,0,0,.34);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius: var(--radius);
+      padding:12px;
+      overflow:auto;
+    }
+    .diagram .k{color: rgba(79,209,255,.95)}
+    .diagram .v{color: rgba(167,139,250,.95)}
+    .diagram .m{color: rgba(52,211,153,.95)}
+    .diagram .a{color: rgba(251,191,36,.95)}
+    .diagram .r{color: rgba(251,113,133,.95)}
+    .diagram .h{color: rgba(255,61,242,.95)}
+
+    /* Table-ish list */
+    .list{
+      margin-top:12px;
+      border-radius: var(--radius);
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.20);
+      overflow:hidden;
+    }
+    .row{
+      display:grid;
+      grid-template-columns: 240px 1fr;
+      gap:12px;
+      padding:12px 14px;
+      border-top:1px solid rgba(255,255,255,.08);
+    }
+    .row:first-child{border-top:none}
+    @media (max-width: 720px){
+      .row{grid-template-columns:1fr}
+    }
+    .row .k{
+      font-family:var(--mono);
+      color: rgba(255,255,255,.65);
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.6px;
+    }
+    .row .v{
+      color: var(--muted);
+      font-size:13px;
+    }
+
+    /* Callout */
+    .quote{
+      margin-top:12px;
+      padding:14px;
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.14);
+      background:
+        radial-gradient(900px 240px at 20% 10%, rgba(255,61,242,.14), transparent 55%),
+        radial-gradient(900px 240px at 90% 20%, rgba(79,209,255,.10), transparent 60%),
+        rgba(0,0,0,.20);
+      position:relative;
+      overflow:hidden;
+    }
+    .quote:before{
+      content:"";
+      position:absolute; inset:-60px -60px auto auto;
+      width:240px; height:240px;
+      background: radial-gradient(circle at 35% 35%, rgba(255,61,242,.20), transparent 60%);
+      transform: rotate(18deg);
+    }
+    .quote p{margin:0; color:rgba(255,255,255,.80); font-size:13.5px}
+    .quote b{color:rgba(255,255,255,.95)}
+
+    footer{
+      margin-top:28px;
+      color: rgba(255,255,255,.50);
+      font-size:12px;
+      border-top:1px solid rgba(255,255,255,.10);
+      padding-top:14px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">
+        <span class="spark" aria-hidden="true"></span>
+        <span>Atlas</span>
+      </div>
+      <div class="nav">
+        <a href="#select">Select</a>
+        <a href="#plane">Swivel Plane</a>
+        <a href="#dial">Dial</a>
+        <a href="#save">Save Snapshot</a>
+      </div>
+    </div>
+
+    <!-- HERO -->
+    <div class="card pad-xl">
+      <div class="kicker"><span class="kdot"></span>Plane Navigation Advanced</div>
+
+      <h1>
+        Pick a coordinate.
+        <span class="term t-violet">Open the plane</span>.
+        <span class="term t-hot">Swivel the view</span>.
+      </h1>
+
+      <p class="lead">
+        This describes the “advanced plane traversal” layer: you can jump to any image at a known
+        <span class="term t-mint">(x,y,z)</span> coordinate, then build a navigable slice around it using
+        <span class="term t-cyan">offset distances</span> and a <span class="term t-hot">rotation dial</span>.
+        The resulting plane view can be saved as a reproducible snapshot so a screenshot isn’t just pretty,
+        it’s a <b>map back to the same cluster</b>.
+      </p>
+
+      <div class="quote">
+        <p>
+          <b>Core metaphor:</b> like a door on a swivel. You stand on one image, select how far to reach left/right/up/down,
+          then rotate the door to reveal different axis-aligned neighborhoods without losing your anchor.
+        </p>
+      </div>
+    </div>
+
+    <!-- SELECT -->
+    <section id="select">
+      <div class="card pad">
+        <div class="subhead">I. Coordinate targeting</div>
+        <h2>Select any image by coordinate and teleport to it</h2>
+        <p class="lead">
+          Every image has a stable identity plus a current coordinate under the current arrangement. If you have an image ID (or
+          you click it in any view), you can open its coordinate directly.
+        </p>
+
+        <div class="tiles">
+          <div class="tile">
+            <h3>1) Choose the anchor image</h3>
+            <p>Pick any image, or paste its ID, then “Go to coordinate.”</p>
+          </div>
+          <div class="tile">
+            <h3>2) Land on (x,y,z)</h3>
+            <p>The engine positions you at that exact neighborhood, making it your local origin.</p>
+          </div>
+          <div class="tile">
+            <h3>3) Build from the anchor</h3>
+            <p>Everything that follows is computed relative to the selected image.</p>
+          </div>
+        </div>
+
+        <div class="diagram" style="margin-top:14px" aria-label="Coordinate selection diagram">
+          Anchor Image A selected
+          <br/>
+          A has coordinate: <span class="m">(x,y,z)</span>
+          <br/>
+          User action: <span class="k">Go to A</span>
+          <br/>
+          Result: A becomes local origin for traversal + plane construction
+        </div>
+      </div>
+    </section>
+
+    <!-- PLANE -->
+    <section id="plane">
+      <div class="grid">
+        <div class="card pad span7">
+          <div class="subhead">II. Plane construction</div>
+          <h2>Form a plane around the image using offsets</h2>
+          <p class="lead">
+            Once you’re standing on an image, you define a “plane window” by choosing distances:
+            how many images to include to the <b>left</b>, <b>right</b>, <b>up</b>, and <b>down</b>.
+            This creates a rectangular neighborhood slice centered on your anchor.
+          </p>
+
+          <div class="list">
+            <div class="row">
+              <div class="k">Offsets</div>
+              <div class="v">
+                Example: <span class="term">Left=3</span> <span class="term">Right=1</span> <span class="term">Up=4</span> <span class="term">Down=2</span>
+                creates a plane window that reaches unevenly in each direction.
+              </div>
+            </div>
+            <div class="row">
+              <div class="k">Why uneven matters</div>
+              <div class="v">
+                You can “lean” the window toward where the cluster is denser, without recentering the anchor image.
+              </div>
+            </div>
+            <div class="row">
+              <div class="k">What populates the plane</div>
+              <div class="v">
+                The plane is filled by the nearest images relative to the anchor under the current arrangement,
+                preserving the current geometry of the cluster.
+              </div>
+            </div>
+          </div>
+
+          <div class="diagram" style="margin-top:14px" aria-label="Plane window diagram">
+            Anchor = A at <span class="m">(x,y,z)</span>
+            <br/>
+            Plane Window = A + offsets
+            <br/>
+            <span class="k">L</span>=3  <span class="k">R</span>=1  <span class="k">U</span>=4  <span class="k">D</span>=2
+            <br/>
+            → construct an axis-aligned neighborhood plane around A
+          </div>
+        </div>
+
+        <div class="card pad span5">
+          <div class="subhead">What this gives you</div>
+          <h2>A “cluster slice” you can screenshot</h2>
+          <p class="lead" style="font-size:14px">
+            This is designed so a screenshot isn’t just an aesthetic capture. It’s a navigational artifact:
+            you can use the offsets + dial state to find the same region again.
+          </p>
+
+          <div class="tiles">
+            <div class="tile">
+              <h3>Anchor stays visible</h3>
+              <p>The selected image remains the constant reference point.</p>
+            </div>
+            <div class="tile">
+              <h3>Neighborhood is bounded</h3>
+              <p>Offsets make the plane finite and readable.</p>
+            </div>
+            <div class="tile">
+              <h3>Dial makes it dimensional</h3>
+              <p>Rotation swaps which axis you’re “looking along.”</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DIAL -->
+    <section id="dial">
+      <div class="card pad">
+        <div class="subhead">III. Swivel door dial</div>
+        <h2>Turn a dial to rotate axis view</h2>
+        <p class="lead">
+          The dial behaves like a swivel: it rotates which axis is emphasized. At one dial position, you’re looking at the
+          <span class="term t-violet">top view</span>. Turn the dial and you begin seeing the same neighborhood projected so the
+          <span class="term t-cyan">Y axis</span> (depth) becomes legible as layers.
+        </p>
+
+        <div class="list">
+          <div class="row">
+            <div class="k">Dial = factor</div>
+            <div class="v">
+              The dial increments by “factors” (example: 1 step per click). Each step corresponds to an axis rotation state.
+            </div>
+          </div>
+          <div class="row">
+            <div class="k">What changes</div>
+            <div class="v">
+              Same anchor. Same offsets. Different projection: you see the surrounding images reorganized by the chosen axis view.
+            </div>
+          </div>
+          <div class="row">
+            <div class="k">Why this matters</div>
+            <div class="v">
+              It lets you “read depth” in a plane system: you can examine a cluster’s vertical layering without leaving your anchor.
+            </div>
+          </div>
+        </div>
+
+        <div class="diagram" style="margin-top:14px" aria-label="Dial rotation diagram">
+          Dial position N → Axis view state N
+          <br/>
+          N=0 → <span class="v">Top view</span> (plane projection)
+          <br/>
+          N=1 → <span class="k">Y-axis emphasis</span> (layered depth)
+          <br/>
+          N=2 → alternate projection (another axis slice)
+          <br/><br/>
+          Anchor + offsets stay constant; only the projection changes.
+        </div>
+      </div>
+    </section>
+
+    <!-- SAVE -->
+    <section id="save">
+      <div class="grid">
+        <div class="card pad span6">
+          <div class="subhead">IV. Save like a scientist</div>
+          <h2>Save the plane snapshot for reconstruction</h2>
+          <p class="lead">
+            When you save, you’re not saving only the image. You’re saving the <b>conditions that produced this neighborhood</b>
+            and the plane view you built around it.
+          </p>
+
+          <div class="tiles">
+            <div class="tile">
+              <h3>Save offsets</h3>
+              <p>Left/Right/Up/Down distances used to construct the plane window.</p>
+            </div>
+            <div class="tile">
+              <h3>Save dial rotation</h3>
+              <p>The knob’s position, mapped to the axis projection state.</p>
+            </div>
+            <div class="tile">
+              <h3>Save the arrangement</h3>
+              <p>Everything needed to approximate the same cluster again.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card pad span6">
+          <div class="subhead">What a saved record contains</div>
+          <h2>Full snapshot payload (human-readable)</h2>
+
+          <div class="list">
+            <div class="row">
+              <div class="k">Dataset</div>
+              <div class="v">Which database/archive filled the plane (source + version/seed if applicable).</div>
+            </div>
+            <div class="row">
+              <div class="k">Anchor coordinate</div>
+              <div class="v">The chosen image coordinate <span class="term t-mint">(x,y,z)</span> at save time.</div>
+            </div>
+            <div class="row">
+              <div class="k">Offsets</div>
+              <div class="v">Left/Right/Up/Down distances used to create the plane window.</div>
+            </div>
+            <div class="row">
+              <div class="k">Dial state</div>
+              <div class="v">Knob rotation value + the axis mapping it implies.</div>
+            </div>
+            <div class="row">
+              <div class="k">Founding inputs</div>
+              <div class="v">Seeds used to form the plane: images, tags, tag clusters, and any composites.</div>
+            </div>
+            <div class="row">
+              <div class="k">Composites</div>
+              <div class="v">If a point was “image+image+tag cluster,” store each component explicitly.</div>
+            </div>
+            <div class="row">
+              <div class="k">Heat profile</div>
+              <div class="v">Heat for every relevant point: tags, clusters, images, and composites.</div>
+            </div>
+            <div class="row">
+              <div class="k">Tag composition</div>
+              <div class="v">If a node is a tag cluster, store which tags it contains (and their weights if any).</div>
+            </div>
+            <div class="row">
+              <div class="k">User note</div>
+              <div class="v">Optional text you append to the saved item (why it matters, what you found).</div>
+            </div>
+          </div>
+
+          <div class="quote">
+            <p>
+              <b>Why store this much?</b> If you lose everything, a saved record plus a screenshot can guide you back to the same
+              plane cluster. The anchor coordinate is the “where,” and the offsets + dial state are the “how you looked at it.”
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;">
+        <div>
+          <b>Atlas Plane Navigation (Advanced)</b>
+          <span style="color:rgba(255,255,255,.32)">|</span>
+          <span style="color:rgba(255,255,255,.60)">Offsets • Dial Rotation • Snapshot Reconstruction</span>
+        </div>
+        <div style="font-family:var(--mono); color:rgba(255,255,255,.45)">
+          plane-nav-adv.html • coordinate teleport • swivel plane • save payload
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
